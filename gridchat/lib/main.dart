@@ -9,6 +9,13 @@ void main() {
   runApp(const MyApp());
 }
 
+class Message {
+  String content;
+
+  Message(this.content);
+  Message.unnamed() : content = 'FUCK';
+}
+
 // #docregion MyApp
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -33,10 +40,16 @@ class MyApp extends StatelessWidget {
 
 // #docregion RWS-var
 class _RandomWordsState extends State<RandomWords> {
-  final _suggestions = <WordPair>[];
-  final _saved = <WordPair>{};
+  final _suggestions = <Message>[];
+  final _saved = <Message>{};
   final _biggerFont = const TextStyle(fontSize: 18);
-
+  getMessages(int x) {
+    var returny = <Message>[];
+    for (int i = 0; i < x; i++) {
+      returny.add(Message("ASDF"));
+    }
+    return returny;
+  }
   // #enddocregion RWS-var
 
   // #docregion RWS-build
@@ -62,13 +75,13 @@ class _RandomWordsState extends State<RandomWords> {
 
           final index = i ~/ 2; /*3*/
           if (index >= _suggestions.length) {
-            _suggestions.addAll(generateWordPairs().take(10)); /*4*/
+            _suggestions.addAll(getMessages(10)); /*4*/
           }
           final alreadySaved = _saved.contains(_suggestions[index]);
           // #docregion listTile
           return ListTile(
               title: Text(
-                _suggestions[index].asPascalCase,
+                _suggestions[index].content,
                 style: _biggerFont,
               ),
               trailing: Icon(
@@ -102,7 +115,7 @@ class _RandomWordsState extends State<RandomWords> {
             (pair) {
               return ListTile(
                 title: Text(
-                  pair.asPascalCase,
+                  pair.content,
                   style: _biggerFont,
                 ),
               );
