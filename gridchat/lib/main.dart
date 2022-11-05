@@ -5,6 +5,7 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 
+
 void main() {
   runApp(const MyApp());
 }
@@ -27,8 +28,8 @@ class MyApp extends StatelessWidget {
       title: 'HLLN',
       theme: ThemeData(
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color.fromARGB(255, 43, 43, 43),
-          foregroundColor: Color.fromARGB(255, 151, 229, 201),
+          backgroundColor: Color(0xFF2B2B2B),
+          foregroundColor: Color(0xFF89FFD4),
         ),
       ),
       home: RandomWords(),
@@ -58,7 +59,9 @@ class _RandomWordsState extends State<RandomWords> {
     return Scaffold(
       // NEW from here ...
       appBar: AppBar(
-        title: const Text('HLLN'),
+        title: Image.network( // <-- SEE HERE
+      'https://iili.io/msFVKG.md.png', height: 50,
+    ),
         actions: [
           IconButton(
             icon: const Icon(Icons.access_alarm_outlined),
