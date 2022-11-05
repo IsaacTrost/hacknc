@@ -17,11 +17,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Startup Name Generator',
+      title: 'HLLN',
       theme: ThemeData(
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.red,
-          foregroundColor: Colors.blue,
+          backgroundColor: Color.fromARGB(255, 43, 43, 43),
+          foregroundColor: Color.fromARGB(255, 151, 229, 201),
         ),
       ),
       home: RandomWords(),
@@ -45,10 +45,10 @@ class _RandomWordsState extends State<RandomWords> {
     return Scaffold(
       // NEW from here ...
       appBar: AppBar(
-        title: const Text('Startup Name Generator'),
+        title: const Text('HLLN'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.list),
+            icon: const Icon(Icons.access_alarm_outlined),
             onPressed: _pushSaved,
             tooltip: 'Saved Suggestions',
           ),
