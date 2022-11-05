@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:developer';
+
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
+
+//import 'location.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,7 +36,7 @@ class MyApp extends StatelessWidget {
           foregroundColor: Color.fromRGBO(0, 0, 0, 1),
         ),
       ),
-      home: RandomWords(),
+      home: Chat(),
     );
   }
   // #enddocregion build
@@ -39,17 +44,13 @@ class MyApp extends StatelessWidget {
 // #enddocregion MyApp
 
 // #docregion RWS-var
-class _RandomWordsState extends State<RandomWords> {
+class _ChatState extends State<Chat> {
   final _suggestions = <Message>[];
   final _saved = <Message>{};
   final _biggerFont = const TextStyle(fontSize: 18);
-  getMessages(int x) {
-    var returny = <Message>[];
-    for (int i = 0; i < x; i++) {
-      returny.add(Message("ASDF"));
-    }
-    return returny;
-  }
+  LocationData? _currentPosition;
+  Location location = new Location();
+
   // #enddocregion RWS-var
 
   // #docregion RWS-build
@@ -107,6 +108,47 @@ class _RandomWordsState extends State<RandomWords> {
     // #enddocregion itemBuilder
   }
 
+  void initState() {
+    super.initState();
+    fetchLocation();
+  }
+
+  fetchLocation() async {
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _currentPosition = await location.getLocation();
+    location.onLocationChanged.listen((LocationData currentLocation) {});
+  }
+
+  getMessages(int x) {
+    var returny = <Message>[];
+    for (int i = 0; i < x; i++) {
+      if (_currentPosition == null) {
+        returny.add(Message("ASDF"));
+      } else {
+        returny.add(Message(_currentPosition?.latitude.toString() ?? "asdf"));
+      }
+    }
+    return returny;
+  }
+
   void _pushSaved() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -143,9 +185,9 @@ class _RandomWordsState extends State<RandomWords> {
 }
 // #enddocregion RWS-var
 
-class RandomWords extends StatefulWidget {
-  const RandomWords({super.key});
+class Chat extends StatefulWidget {
+  const Chat({super.key});
 
   @override
-  State<RandomWords> createState() => _RandomWordsState();
+  State<Chat> createState() => _ChatState();
 }
