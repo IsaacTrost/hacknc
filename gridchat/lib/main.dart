@@ -29,11 +29,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Startup Name Generator',
+      title: 'HLLN',
       theme: ThemeData(
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color.fromRGBO(20, 165, 141, 1),
-          foregroundColor: Color.fromRGBO(0, 0, 0, 1),
+          backgroundColor: Color.fromARGB(255, 43, 43, 43),
+          foregroundColor: Color.fromARGB(255, 151, 229, 201),
         ),
       ),
       home: Chat(),
@@ -59,10 +59,10 @@ class _ChatState extends State<Chat> {
     return Scaffold(
       // NEW from here ...
       appBar: AppBar(
-        title: const Text('Startup Name Generator'),
+        title: const Text('HLLN'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.list),
+            icon: const Icon(Icons.access_alarm_outlined),
             onPressed: _pushSaved,
             tooltip: 'Saved Suggestions',
           ),
