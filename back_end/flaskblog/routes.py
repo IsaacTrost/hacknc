@@ -1,13 +1,14 @@
 import os
 from flask import render_template
 from back_end.flaskblog import app
-from flaskblog import 
+from flaskblog.forms import ChatForm
+from flaskblog import db
 
-@app.route("/", methods=['GET', 'POST'])
-def home():
-    return render_template('home.html')
+@app.route("/chat", methods=['GET', 'POST'])
+def chat():
     form = ChatForm()
-    print(form.validate_on_submit())
 
     if form.valudate_on_submit():
-        chat = Chat(id = , grid_id=)
+        chat = ChatForm(content=form.content.data)#how do i use the current grid id
+        db.session.add(chat)
+        db.session.commit()
