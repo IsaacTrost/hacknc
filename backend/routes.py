@@ -65,16 +65,16 @@ def user():
 @app.route("/heartbeat", methods=['POST'])
 def heartbeat():
     # current lat and long
-    latitude_1 = request.args.get('latitude_1')
-    longitude_1 = request.args.get('longitude_1')
+    latitude_1 = request.args.get('latitude')
+    longitude_1 = request.args.get('longitude')
     user_id = request.args.get('user_id')
     current_grid_id = request.args.get('current_grid')
 
     if current_grid_id is not None:
         # lat and long of grid
         grid = Grid.query.filter_by(id=current_grid_id)
-        latitude_2 = grid['latitude_2']
-        longitude_2 = grid['longitude_2']
+        latitude_2 = grid['latitude']
+        longitude_2 = grid['longitude']
 
         # finding distance relative to lat and long of center of grid
 
