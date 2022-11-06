@@ -16,10 +16,9 @@ void main() {
 }
 
 class Message {
-  String content;
+  Text content;
 
   Message(this.content);
-  Message.unnamed() : content = 'FUCK';
 }
 
 // #docregion MyApp
@@ -37,7 +36,7 @@ class MyApp extends StatelessWidget {
           foregroundColor: Color(0xFF89FFD4),
         ),
       ),
-      home: Chat(),
+      home: Chat(), 
     );
   }
   // #enddocregion build
@@ -46,8 +45,8 @@ class MyApp extends StatelessWidget {
 
 // #docregion RWS-var
 class _ChatState extends State<Chat> {
-  final _suggestions = <Message>[];
-  final _saved = <Message>{};
+  final List<String> _suggestions = <String>[];
+  final _saved = <Text>{};
   final _biggerFont = const TextStyle(fontSize: 18);
   LocationData? _currentPosition;
   Location location = new Location();
@@ -57,59 +56,57 @@ class _ChatState extends State<Chat> {
   // #docregion RWS-build
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       // NEW from here ...
+      floatingActionButton: FloatingActionButton(
+        // When the user presses the button, show an alert dialog containing
+        // the text that the user has entered into the text field.
+        onPressed: () {
+          if(Text(myController.text) != null) {
+            _suggestions.add(myController.text);
+          };
+          
+        },
+        child: const Icon(Icons.text_fields),
+      ),
       appBar: AppBar(
         title: Image.network( // <-- SEE HERE
       'https://iili.io/msFVKG.md.png', height: 50,
     ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.access_alarm_outlined),
-            onPressed: _pushSaved,
-            tooltip: 'Saved Suggestions',
-          ),
-        ],
+        
       ),
       // #docregion itemBuilder
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemBuilder: /*1*/ (context, i) {
-          if (i.isOdd) return const Divider(); /*2*/
+      body: 
 
-          final index = i ~/ 2; /*3*/
-          if (index >= _suggestions.length) {
-            _suggestions.addAll(getMessages(10)); /*4*/
-          }
-          final alreadySaved = _saved.contains(_suggestions[index]);
-          // #docregion listTile
-          return ListTile(
-              title: Text(
-                _suggestions[index].content,
-                style: _biggerFont,
-              ),
-              trailing: Icon(
-                // NEW from here ...
-                alreadySaved ? Icons.favorite : Icons.favorite_border,
-                color: alreadySaved ? Colors.red : null,
-                semanticLabel: alreadySaved ? 'Remove from saved' : 'Save',
-              ),
-              onTap: () {
-                // NEW from here ...
-                setState(() {
-                  if (alreadySaved) {
-                    _saved.remove(_suggestions[index]);
-                  } else {
-                    _saved.add(_suggestions[index]);
-                  }
-                });
-              });
-          // #enddocregion listTile
-        },
+      ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: _suggestions.length,
+        itemBuilder: (BuildContext context, int index) {
+          return Container(
+            height: 50,
+            child: Center(child: Text('Test ${_suggestions[index]}')),
+          );
+                      }
       ),
     );
     // #enddocregion itemBuilder
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   void initState() {
     super.initState();
@@ -139,52 +136,18 @@ class _ChatState extends State<Chat> {
     _currentPosition = await location.getLocation();
     location.onLocationChanged.listen((LocationData currentLocation) {});
   }
-
-  getMessages(int x) {
-    var returny = <Message>[];
-    for (int i = 0; i < x; i++) {
-      if (_currentPosition == null) {
-        returny.add(Message("ASDF"));
-      } else {
-        returny.add(Message(_currentPosition?.latitude.toString() ?? "asdf"));
-      }
-    }
-    return returny;
-  }
-
-  void _pushSaved() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          final tiles = _saved.map(
-            (pair) {
-              return ListTile(
-                title: Text(
-                  pair.content,
-                  style: _biggerFont,
-                ),
-              );
-            },
-          );
-          final divided = tiles.isNotEmpty
-              ? ListTile.divideTiles(
-                  context: context,
-                  tiles: tiles,
-                ).toList()
-              : <Widget>[];
-
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Saved Suggestions'),
-            ),
-            body: ListView(children: divided),
-          );
-        },
-      ),
-    );
-  }
   // #enddocregion RWS-build
   // #docregion RWS-var
+
+final myController = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    myController.dispose();
+    super.dispose();
+  }
+
 }
 // #enddocregion RWS-var
 
