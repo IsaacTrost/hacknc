@@ -66,9 +66,8 @@ Future<http.Response> postMessage(Message message, int CurrentGridId) {
   );
 }
 
-Future<http.Response> postHeartbeat(
-    double latitude, double longitude, int userid) {
-  return http.post(
+Future<int> postHeartbeat(double latitude, double longitude, int userid) async {
+  var response = await http.post(
     Uri.parse('https://gridchat.tech/heartbeat'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
@@ -79,6 +78,15 @@ Future<http.Response> postHeartbeat(
       'longitude': longitude.toString(),
     }),
   );
+  if (response.statusCode == 200) {
+    // If the server did return a 200 OK response,
+    // then parse the JSON.
+    return jsonDecode(response.body)['grid_id'];
+  } else {
+    // If the server did not return a 200 OK response,
+    // then throw an exception.
+    throw Exception('Failed to load cells');
+  }
 }
 
 // Future<Cell> fetchCells() async {
@@ -130,12 +138,16 @@ class Message {
 class Cell {
   double latitude;
   double longitude;
-  Cell({required this.latitude, required this.longitude});
+  int activity;
+  Cell(
+      {required this.latitude,
+      required this.longitude,
+      required this.activity});
   factory Cell.fromJson(Map<String, dynamic> json) {
     return Cell(
-      latitude: json['latitude'],
-      longitude: json['longitude'],
-    );
+        latitude: json['latitude'],
+        longitude: json['longitude'],
+        activity: json['activity']);
   }
   bool contained(LatLng loc) {
     final convert = (1 / 111111) * 50;
@@ -263,7 +275,7 @@ class _MapyState extends State<Mapy> {
         fillColor: Color.fromARGB(90, 40, 151, (255 ~/ 100) * counter),
         points: latlng,
         strokeWidth: 1,
-        strokeColor: Color.fromARGB(255, 151, 229, 201),
+        strokeColor: Color.fromARGB(255, 151, x.activity * 8, 201),
       ));
 
       counter++;
@@ -279,11 +291,13 @@ class _MapyState extends State<Mapy> {
 
   _CreateSpoofGrid() {
     final convert = (1 / (111111));
+    var rng = Random();
     final offset = 5 * convert * 100;
     for (var i = 0; i < 100; i++) {
       _gridCellCenters.add(Cell(
           latitude: 35.7796 - offset + (i % 10) * convert * 100,
-          longitude: -78.6382 - offset + (i ~/ 10) * convert * 100));
+          longitude: -78.6382 - offset + (i ~/ 10) * convert * 100,
+          activity: rng.nextInt(32)));
     }
   }
 
@@ -315,9 +329,9 @@ class _MapyState extends State<Mapy> {
         zoom: 14.4746,
       );
     }
-    location.onLocationChanged.listen((LocationData currentLocation) {
+    location.onLocationChanged.listen((LocationData currentLocation) async {
       if (_currentPosition != null) {
-        var response = postHeartbeat(currentLocation.latitude ?? 30.0,
+        currentGridId = await postHeartbeat(currentLocation.latitude ?? 30.0,
             currentLocation.longitude ?? 30.0, userid);
         setState(() {
           _currentPosition;
@@ -342,6 +356,7 @@ class Mapy extends StatefulWidget {
 }
 
 class _ChatState extends State<Chat> {
+  var userid = 1;
   var currentGridId = 0;
   List<Message> _suggestions = [];
   final myController = TextEditingController();
@@ -363,6 +378,9 @@ class _ChatState extends State<Chat> {
           // the text that the user has entered into the text field.
           onPressed: () {
             if (Text(myController.text) != null) {
+              postMessage(
+                  Message(content: myController.text, time: DateTime.now()),
+                  currentGridId);
               _suggestions.insert(
                   0, Message(content: myController.text, time: DateTime.now()));
               myController.text = "";
@@ -503,7 +521,15 @@ class _ChatState extends State<Chat> {
     }
 
     _currentPosition = await location.getLocation();
-    location.onLocationChanged.listen((LocationData currentLocation) {});
+    location.onLocationChanged.listen((LocationData currentLocation) async {
+      if (_currentPosition != null) {
+        currentGridId = await postHeartbeat(currentLocation.latitude ?? 30.0,
+            currentLocation.longitude ?? 30.0, userid);
+        setState(() {
+          _currentPosition;
+        });
+      }
+    });
   }
   // #enddocregion RWS-build
   // #docregion RWS-var
