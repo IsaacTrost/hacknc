@@ -216,11 +216,16 @@ class _MapState extends State<Map> {
     }
     location.onLocationChanged.listen((LocationData currentLocation) {
       if (_currentPosition != null) {
-        _here = CameraPosition(
-          target: LatLng(_currentPosition?.latitude ?? 1.0,
-              _currentPosition?.longitude ?? 1.0),
-          zoom: 14.4746,
-        );
+        setState(() {
+          _currentPosition;
+        });
+        setState(() {
+          _here = CameraPosition(
+            target: LatLng(_currentPosition?.latitude ?? 1.0,
+                _currentPosition?.longitude ?? 1.0),
+            zoom: 14.4746,
+          );
+        });
       }
     });
   }
