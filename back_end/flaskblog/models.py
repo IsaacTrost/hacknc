@@ -1,10 +1,8 @@
 from flaskblog import db
 
 
-  
-
 class Grid(db.Model):
-  id = db.Column(db.Integer, primary_key=True)#
+  id = db.Column(db.Integer, primary_key=True)
   inhabitants = db.relationship('Inhabitants', backref='grid')
   x = db.Column(db.Integer)
   y = db.Column(db.Integer)
