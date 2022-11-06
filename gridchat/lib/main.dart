@@ -6,8 +6,7 @@ import 'package:location/location.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
 import 'dart:math';
-
-//import 'location.dart';
+import 'package:sticky_headers/sticky_headers.dart';
 
 void main() {
   runApp(const MyApp());
@@ -40,11 +39,20 @@ class Message {
   Message.unnamed() : content = 'FUCK';
 }
 
+class Cell {
+  double? latitude;
+  double? longitude;
+  Cell(latitude, longitude) {
+    this.latitude = latitude;
+    this.longitude = longitude;
+  }
+}
+
 class _MapState extends State<Map> {
   Set<Polyline> gridLines = {};
   LocationData? _currentPosition;
   Location location = new Location();
-  var gridCellCenter = [-78, 35];
+  var _gridCellCenters = <Cell>[];
   Completer<GoogleMapController> _controller = Completer();
   CameraPosition? _here;
 
@@ -69,8 +77,9 @@ class _MapState extends State<Map> {
         onMapCreated: (GoogleMapController controller) async {
           _controller.complete(controller);
           final GoogleMapController cntr = await _controller.future;
+          _CreateSpoofGrid();
           location.onLocationChanged.listen((l) {
-            _GetLocalGrid(l);
+            _GetLocalGrid();
           });
         },
         myLocationEnabled: true,
@@ -105,38 +114,50 @@ class _MapState extends State<Map> {
     return 12.742 * asin(sqrt(a));
   }
 
-  void _GetLocalGrid(LocationData l) {
+  void _GetLocalGrid() {
     final Set<Polyline> locGridLines = {};
     final convert = (1 / 111111) * 50;
-    var lat = l.latitude ?? 20.0;
-    var long = l.longitude ?? 20.0;
-    var negx = lat - convert;
-    var posx = lat + convert;
-    var negy = long - convert;
-    var posy = long + convert;
-    List<LatLng> latlng = [
-      LatLng(negx - convert, negy),
-      LatLng(posx + convert, negy),
-      LatLng(negx - convert, posy),
-      LatLng(posx + convert, posy),
-      LatLng(posx, negy - convert),
-      LatLng(posx, posy + convert),
-      LatLng(negx, negy - convert),
-      LatLng(negx, posy + convert)
-    ];
-    for (var i = 0; i < 4; i++) {
-      print("HIHIHI");
-      locGridLines.add(Polyline(
-        polylineId: PolylineId(i.toString()),
-        visible: true,
-        width: 1,
-        points: latlng.sublist(i * 2, i * 2 + 2),
-        color: Colors.blue,
-      ));
+    var counter = 0;
+    for (var x in _gridCellCenters) {
+      var lat = x.latitude ?? 20.0;
+      var long = x.longitude ?? 20.0;
+      var negx = lat - convert;
+      var posx = lat + convert;
+      var negy = long - convert;
+      var posy = long + convert;
+      List<LatLng> latlng = [
+        LatLng(negx, negy),
+        LatLng(posx, negy),
+        LatLng(negx, posy),
+        LatLng(posx, posy),
+        LatLng(posx, negy),
+        LatLng(posx, posy),
+        LatLng(negx, negy),
+        LatLng(negx, posy)
+      ];
+      for (var i = 0; i < 4; i++) {
+        locGridLines.add(Polyline(
+          polylineId: PolylineId((i + 4 * counter).toString()),
+          visible: true,
+          width: 1,
+          points: latlng.sublist(i * 2, i * 2 + 2),
+          color: Colors.red,
+        ));
+      }
+      counter++;
     }
     setState(() {
       gridLines = locGridLines;
     });
+  }
+
+  _CreateSpoofGrid() {
+    final convert = (1 / 111111);
+    final offset = 5 * convert * 100;
+    for (var i = 0; i < 100; i++) {
+      _gridCellCenters.add(Cell(30 - offset + (i % 10) * convert * 100,
+          30 - offset + (i ~/ 10) * convert * 100));
+    }
   }
 
   fetchLocation() async {
@@ -188,9 +209,10 @@ class Map extends StatefulWidget {
 
 class _ChatState extends State<Chat> {
   final List<String> _suggestions = <String>[
-    "asdfay a ",
-    "a'lf yawom fha9isuf"
+    "Yo knkow, I really think I like cheese",
+    "But I dont"
   ];
+  final myController = TextEditingController();
   final _saved = <Text>{};
   final _biggerFont = const TextStyle(fontSize: 18);
   LocationData? _currentPosition;
@@ -202,41 +224,81 @@ class _ChatState extends State<Chat> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // NEW from here ...
-      floatingActionButton: FloatingActionButton(
-        // When the user presses the button, show an alert dialog containing
-        // the text that the user has entered into the text field.
-        onPressed: () {
-          if (Text(myController.text) != null) {
-            _suggestions.add(myController.text);
-          }
-          ;
-        },
-        child: const Icon(Icons.text_fields),
-      ),
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-            onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
-        title: Image.network(
-          // <-- SEE HERE
-          'https://iili.io/msFVKG.md.png', height: 50,
+        // NEW from here ...
+        floatingActionButton: FloatingActionButton(
+          // When the user presses the button, show an alert dialog containing
+          // the text that the user has entered into the text field.
+          onPressed: () {
+            if (Text(myController.text) != null) {
+              _suggestions.add(myController.text);
+            }
+            ;
+          },
+          child: const Icon(Icons.text_fields),
         ),
-        actions: [
-          IconButton(onPressed: _Refreash, icon: const Icon(Icons.chat_bubble)),
-        ],
-      ),
-      // #docregion itemBuilder
-      body: ListView.builder(
-          padding: const EdgeInsets.all(16.0),
-          itemCount: _suggestions.length,
-          itemBuilder: (BuildContext context, int index) {
-            return Container(
-              height: 50,
-              child: Center(child: Text('Test ${_suggestions[index]}')),
-            );
-          }),
-    );
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: IconButton(
+              onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
+          title: Image.network(
+            // <-- SEE HERE
+            'https://iili.io/msFVKG.md.png', height: 50,
+          ),
+          actions: [
+            IconButton(
+                onPressed: _Refreash, icon: const Icon(Icons.chat_bubble)),
+          ],
+        ),
+        // #docregion itemBuilder
+        // body: ListView(
+        //   children: [
+        //     StickyHeader(
+        //         header: Padding(
+        //           padding: const EdgeInsets.all(16.0),
+        //           child: TextField(
+        //             controller: myController,
+        //           ),
+        //         ),
+        //         content: ListView.builder(
+        //             padding: const EdgeInsets.all(16.0),
+        //             itemCount: _suggestions.length,
+        //             itemBuilder: (BuildContext context, int index) {
+        //               return Container(
+        //                 height: 50,
+        //                 child: Center(child: Text('Test ${_suggestions[index]}')),
+        //               );
+        //             })),
+        //   ],
+        // ),
+
+        body: CustomScrollView(
+          reverse: true,
+          slivers: [
+            SliverPadding(
+                padding: const EdgeInsets.all(20.0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(
+                    <Widget>[
+                      TextField(
+                        controller: myController,
+                      ),
+                    ],
+                  ),
+                )),
+            SliverPadding(
+                padding: const EdgeInsets.all(20.0),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (BuildContext context, int index) {
+                      return Container(
+                        child: Text('Item: ${_suggestions[index]}'),
+                      );
+                    },
+                    childCount: _suggestions.length,
+                  ),
+                )),
+          ],
+        ));
     // #enddocregion itemBuilder
   }
 
@@ -270,8 +332,6 @@ class _ChatState extends State<Chat> {
   }
   // #enddocregion RWS-build
   // #docregion RWS-var
-
-  final myController = TextEditingController();
 
   @override
   void dispose() {
