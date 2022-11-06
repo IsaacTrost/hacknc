@@ -1,12 +1,13 @@
 import os
 from flask import render_template
-from backend import app, db 
-from utils import distance, insideGrid, GRID_SIZE
-from models import Grid
+from backend import app, db
+from backend.utils import distance, insideGrid, GRID_SIZE
+from backend.models import Grid
 
 from flask import request
 
-GRID_SIZE = 200  # grid size in feet FOR NOW 
+GRID_SIZE = 200  # grid size in feet FOR NOW
+
 
 @app.route("/chat", methods=['GET', 'POST'])
 def chat():
@@ -22,10 +23,10 @@ def chat():
 @app.route("/heartbeat", methods=['POST'])
 def heartbeat():
     # current lat and long
-    latitude_1 = request.args['latitude_1']
-    longitude_1 = request.args['longitude_2']
-    user_id = request.args['user_id']
-    current_grid_id = request.args['current_grid']
+    latitude_1 = request.args.get('latitude_1')
+    longitude_1 = request.args.get('longitude_2')
+    user_id = request.args.get('user_id')
+    current_grid_id = request.args.get('current_grid')
 
     if current_grid_id is not None:
         # lat and long of grid
@@ -34,8 +35,12 @@ def heartbeat():
         longitude_2 = grid['longitude_2']
 
         # finding distance relative to lat and long of center of grid
+
         d = distance(lat1=latitude_1, lat2=latitude_2,
                      long1=longitude_1, long2=longitude_2)
+    else:
+        create_new_grid(longitude_1, latitude_1)
+        return
 
     if d > GRID_SIZE:
         # remove user from current grid
@@ -49,11 +54,13 @@ def heartbeat():
             if insideGrid(latitude_1, longitude_2, latitude_2, longitude_2):
                 g.inhabitants.add(user_id)
                 db.session.commit()
-                return # return if we find a grid
+                return  # return if we find a grid
 
         # else, create a new grid
-        grid = Grid(latitude_1, latitude_2) 
-        db.session.add(grid)
-        db.session.commit()
-    
+        create_new_grid(longitude_1, latitude_1)
 
+
+def create_new_grid(longitude_1, latitude_1):
+    grid = Grid(latitude=latitude_1, longitude=longitude_1)
+    db.session.add(grid)
+    db.session.commit()
