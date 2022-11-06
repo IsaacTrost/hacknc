@@ -240,8 +240,6 @@ class Map extends StatefulWidget {
 
 class _ChatState extends State<Chat> {
   final List<Message> _suggestions = <Message>[
-    Message("Yo knkow, I really think I like cheese", DateTime.now()),
-    Message("FUUUUUUUUUUUUUUUUUUUUCKKKKKKKKKKK", DateTime.now())
   ];
   final myController = TextEditingController();
   final _saved = <Text>{};
