@@ -38,9 +38,8 @@ class MyApp extends StatelessWidget {
 
 class Message {
   String content;
-
-  Message(this.content);
-  Message.unnamed() : content = 'FUCK';
+  DateTime time;
+  Message(this.content, this.time);
 }
 
 class Cell {
@@ -223,9 +222,9 @@ class Map extends StatefulWidget {
 }
 
 class _ChatState extends State<Chat> {
-  final List<String> _suggestions = <String>[
-    "Yo knkow, I really think I like cheese",
-    "But I dont"
+  final List<Message> _suggestions = <Message>[
+    Message("Yo knkow, I really think I like cheese", DateTime.now()),
+    Message("FUUUUUUUUUUUUUUUUUUUUCKKKKKKKKKKK", DateTime.now())
   ];
   final myController = TextEditingController();
   final _saved = <Text>{};
@@ -245,7 +244,8 @@ class _ChatState extends State<Chat> {
           // the text that the user has entered into the text field.
           onPressed: () {
             if (Text(myController.text) != null) {
-              _suggestions.insert(0, myController.text);
+              _suggestions.insert(
+                  0, Message(myController.text, DateTime.now()));
               myController.text = "";
               setState(() {
                 _suggestions;
@@ -290,13 +290,13 @@ class _ChatState extends State<Chat> {
                     (BuildContext context, int index) {
                       if (index.isOdd) return const Divider();
                       index = index ~/ 2;
-                      return Container(
-                        height: 30,
-                        child: Text(
-                            ' ${now.hour.toString() + ":" + now.minute.toString() + ":" + now.second.toString() + "      " + _suggestions[index]}',
-                            style: TextStyle(
-                                color: Color.fromARGB(255, 151, 229, 201))),
-                      );
+                      return ListTile(
+                          title: Text(' ${_suggestions[index].content}',
+                              style: TextStyle(
+                                  color: Color.fromARGB(255, 151, 229, 201))),
+                          trailing: Text(_suggestions[index].time.toString(),
+                              style: TextStyle(
+                                  color: Color.fromARGB(255, 151, 229, 201))));
                     },
                     childCount: _suggestions.length * 2,
                   ),
