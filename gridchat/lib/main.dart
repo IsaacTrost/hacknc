@@ -8,6 +8,8 @@ import 'dart:async';
 import 'dart:math';
 import 'package:sticky_headers/sticky_headers.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
@@ -31,34 +33,131 @@ class MyApp extends StatelessWidget {
                   color: Color.fromARGB(255, 151, 229, 201), width: 2)),
         ),
       ),
-      home: Map(),
+      home: Mapy(),
     );
   }
   // #enddocregion build
 }
 
-class Message {
-  String content;
-  DateTime time;
-  Message(this.content, this.time);
+Future<http.Response> postUser(LatLng loc) {
+  return http.post(
+    Uri.parse('https://gridchat.tech/chat'),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, String>{
+      'latitude': loc.latitude.toString(),
+      'longitude': loc.longitude.toString(),
+    }),
+  );
 }
 
-class Cell {
-  double? latitude;
-  double? longitude;
-  Cell(latitude, longitude) {
-    this.latitude = latitude;
-    this.longitude = longitude;
+Future<http.Response> postMessage(Message message, int CurrentGridId) {
+  return http.post(
+    Uri.parse('https://gridchat.tech/chat'),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, String>{
+      'user_id': "1",
+      'grid_id': CurrentGridId.toString(),
+      'content': message.content,
+    }),
+  );
+}
+
+Future<http.Response> postHeartbeat(
+    double latitude, double longitude, int userid) {
+  return http.post(
+    Uri.parse('https://gridchat.tech/heartbeat'),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, String>{
+      'user_id': userid.toString(),
+      'latitude': latitude.toString(),
+      'longitude': longitude.toString(),
+    }),
+  );
+}
+
+// Future<Cell> fetchCells() async {
+//   final response = await http
+//       .get(Uri.parse('https://jsonplaceholder.typicode.com/albums/1'));
+
+//   if (response.statusCode == 200) {
+//     // If the server did return a 200 OK response,
+//     // then parse the JSON.
+//     return Cell.fromJson(jsonDecode(response.body));
+//   } else {
+//     // If the server did not return a 200 OK response,
+//     // then throw an exception.
+//     throw Exception('Failed to load cells');
+//   }
+// }
+
+Future<List<Message>> fetchMessages(int currentGridId) async {
+  final queryParameters = {
+    'grid_id': currentGridId,
+  };
+  final response = await http.get(Uri.parse('https://gridchat.tech/chat'));
+
+  if (response.statusCode == 200) {
+    // If the server did return a 200 OK response,
+    // then parse the JSON.
+    List<Message> returny = [];
+    for (var x in jsonDecode(response.body)) returny.add(Message.fromJson(x));
+    return returny;
+  } else {
+    // If the server did not return a 200 OK response,
+    // then throw an exception.
+    throw Exception('Failed to load cells');
   }
 }
 
-class _MapState extends State<Map> {
-  Set<Polyline> gridLines = {};
+class Message {
+  String content;
+  DateTime time;
+  Message({required this.content, required this.time});
+  factory Message.fromJson(Map<String, dynamic> json) {
+    return Message(
+      content: json['content'],
+      time: DateTime.parse(json['time']),
+    );
+  }
+}
+
+class Cell {
+  double latitude;
+  double longitude;
+  Cell({required this.latitude, required this.longitude});
+  factory Cell.fromJson(Map<String, dynamic> json) {
+    return Cell(
+      latitude: json['latitude'],
+      longitude: json['longitude'],
+    );
+  }
+  bool contained(LatLng loc) {
+    final convert = (1 / 111111) * 50;
+    if ((this.latitude + convert > loc.latitude) &&
+        (this.latitude - convert < loc.latitude) &&
+        (this.longitude + convert > loc.longitude) &&
+        (this.longitude - convert < loc.longitude)) {
+      return true;
+    }
+    return false;
+  }
+}
+
+class _MapyState extends State<Mapy> {
+  var userid = 1;
+  Set<Polygon> gridLines = {};
   LocationData? _currentPosition;
   Location location = new Location();
   var _gridCellCenters = <Cell>[];
   Completer<GoogleMapController> _controller = Completer();
   CameraPosition? _here;
+  int currentGridId = 0;
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,8 +175,9 @@ class _MapState extends State<Map> {
         ],
       ),
       body: GoogleMap(
+        zoomControlsEnabled: false,
         mapType: MapType.hybrid,
-        polylines: gridLines,
+        polygons: gridLines,
         initialCameraPosition:
             _here ?? CameraPosition(target: LatLng(30.0, 30.0), zoom: .8),
         onMapCreated: (GoogleMapController controller) async {
@@ -141,8 +241,8 @@ class _MapState extends State<Map> {
   }
 
   void _GetLocalGrid() {
-    final Set<Polyline> locGridLines = {};
-    final convert = (1 / 111111) * 50;
+    final Set<Polygon> locGridLines = {};
+    final convert = (1 / (111111)) * 50;
     var counter = 0;
     for (var x in _gridCellCenters) {
       var lat = x.latitude ?? 20.0;
@@ -154,35 +254,36 @@ class _MapState extends State<Map> {
       List<LatLng> latlng = [
         LatLng(negx, negy),
         LatLng(posx, negy),
+        LatLng(posx, posy),
         LatLng(negx, posy),
-        LatLng(posx, posy),
-        LatLng(posx, negy),
-        LatLng(posx, posy),
-        LatLng(negx, negy),
-        LatLng(negx, posy)
       ];
-      for (var i = 0; i < 4; i++) {
-        locGridLines.add(Polyline(
-          polylineId: PolylineId((i + 4 * counter).toString()),
-          visible: true,
-          width: 1,
-          points: latlng.sublist(i * 2, i * 2 + 2),
-          color: Colors.red,
-        ));
-      }
+      locGridLines.add(Polygon(
+        polygonId: PolygonId((counter).toString()),
+        visible: true,
+        fillColor: Color.fromARGB(90, 40, 151, (255 ~/ 100) * counter),
+        points: latlng,
+        strokeWidth: 1,
+        strokeColor: Color.fromARGB(255, 151, 229, 201),
+      ));
+
       counter++;
     }
+    for (var x in locGridLines) {
+      print(x.points);
+    }
+
     setState(() {
       gridLines = locGridLines;
     });
   }
 
   _CreateSpoofGrid() {
-    final convert = (1 / 111111);
+    final convert = (1 / (111111));
     final offset = 5 * convert * 100;
     for (var i = 0; i < 100; i++) {
-      _gridCellCenters.add(Cell(30 - offset + (i % 10) * convert * 100,
-          30 - offset + (i ~/ 10) * convert * 100));
+      _gridCellCenters.add(Cell(
+          latitude: 35.7796 - offset + (i % 10) * convert * 100,
+          longitude: -78.6382 - offset + (i ~/ 10) * convert * 100));
     }
   }
 
@@ -216,6 +317,8 @@ class _MapState extends State<Map> {
     }
     location.onLocationChanged.listen((LocationData currentLocation) {
       if (_currentPosition != null) {
+        var response = postHeartbeat(currentLocation.latitude ?? 30.0,
+            currentLocation.longitude ?? 30.0, userid);
         setState(() {
           _currentPosition;
         });
@@ -231,18 +334,16 @@ class _MapState extends State<Map> {
   }
 }
 
-class Map extends StatefulWidget {
-  const Map({super.key});
+class Mapy extends StatefulWidget {
+  const Mapy({super.key});
 
   @override
-  State<Map> createState() => _MapState();
+  State<Mapy> createState() => _MapyState();
 }
 
 class _ChatState extends State<Chat> {
-  final List<Message> _suggestions = <Message>[
-    Message("Yo knkow, I really think I like cheese", DateTime.now()),
-    Message("FUUUUUUUUUUUUUUUUUUUUCKKKKKKKKKKK", DateTime.now())
-  ];
+  var currentGridId = 0;
+  List<Message> _suggestions = [];
   final myController = TextEditingController();
   final _saved = <Text>{};
   final _biggerFont = const TextStyle(fontSize: 18);
@@ -263,7 +364,7 @@ class _ChatState extends State<Chat> {
           onPressed: () {
             if (Text(myController.text) != null) {
               _suggestions.insert(
-                  0, Message(myController.text, DateTime.now()));
+                  0, Message(content: myController.text, time: DateTime.now()));
               myController.text = "";
               setState(() {
                 _suggestions;
@@ -315,37 +416,34 @@ class _ChatState extends State<Chat> {
           reverse: true,
           slivers: [
             SliverPadding(
-                    padding: const EdgeInsets.only(
-      left: 20,
-      top: 20,
-      right: 150,
-      bottom: 15,
-    ),
+                padding: const EdgeInsets.only(
+                  left: 20,
+                  top: 20,
+                  right: 150,
+                  bottom: 15,
+                ),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     <Widget>[
-                      
                       TextField(
-                        
                         controller: myController,
                         decoration: InputDecoration(
                           hintText: "Type here...",
                           contentPadding: EdgeInsets.only(
-      left: 20,
-      right: 20,
-    ),
-                          
-                          
-                           filled: true, //<-- SEE HERE
-                            fillColor: Colors.white, //<-- SEE HERE
-                            border: OutlineInputBorder(
-      borderSide:
-          BorderSide(width: 3, color: Color.fromARGB(255, 151, 229, 201)), //<-- SEE HERE
-      borderRadius: BorderRadius.circular(50.0),
-    ),
-    
-  ),
+                            left: 20,
+                            right: 20,
+                          ),
 
+                          filled: true, //<-- SEE HERE
+                          fillColor: Colors.white, //<-- SEE HERE
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                width: 3,
+                                color: Color.fromARGB(
+                                    255, 151, 229, 201)), //<-- SEE HERE
+                            borderRadius: BorderRadius.circular(50.0),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -377,6 +475,11 @@ class _ChatState extends State<Chat> {
   void initState() {
     super.initState();
     fetchLocation();
+    loadMessages();
+  }
+
+  loadMessages() async {
+    _suggestions = await fetchMessages(currentGridId);
   }
 
   fetchLocation() async {
@@ -486,12 +589,11 @@ class _ClockState extends State<Clock> {
           title: Text("What time is it?"),
           actions: [
             Container(
-    margin: const EdgeInsets.only(right: 20.0),
-    child : IconButton(
-            onPressed: _popClock, icon: const Icon(Icons.map_rounded)),
-          ),
+              margin: const EdgeInsets.only(right: 20.0),
+              child: IconButton(
+                  onPressed: _popClock, icon: const Icon(Icons.map_rounded)),
+            ),
           ],
-
         ),
         body: Image.network(
           // <-- SEE HERE
