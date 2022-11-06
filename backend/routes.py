@@ -1,5 +1,6 @@
 import os
 from time import time
+from datetime import datetime
 from flask import render_template
 from backend import app, db
 from backend.utils import distance, insideGrid, GRID_SIZE
@@ -30,8 +31,10 @@ def chat():
         id = request.args.get('user_id')
         user = User.query.first_or_404(id)
 
+        timestamp = datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S')
+
         grid.chat_history.append(
-            Chat(grid_id=grid_id, name=user.name, content=message, time_stamp=time()))
+            Chat(grid_id=grid_id, name=user.name, content=message, time_stamp=str(timestamp)))
         db.session.commit()
 
 @app.route("/user", methods=['POST'])
@@ -51,6 +54,7 @@ def user():
     db.session.commit()
 
     return {
+        'id': user.id,
         'name': user.name,
         'latitude': user.latitude,
         'longitude': user.longitude
