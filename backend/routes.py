@@ -105,7 +105,7 @@ def heartbeat():
 
 def sucesss_response(g):
     return {
-        'GRID_ID': g.id
+        'grid_id': g.id
     }
 
 
