@@ -15,13 +15,16 @@ class Grid(db.Model):
 class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     grid_id = db.Column(db.Integer, db.ForeignKey('grid.id'))
+    name = db.Column(db.ForeignKey('user.name'))
     content = db.Column(db.Text, nullable=False)
+    time_stamp = db.Column(db.Text, nullable=False)
 
     def __repr__(self):
         return f"Post('{self.content}')"
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20), nullable=False)
     grid_id = db.Column(db.Integer, db.ForeignKey('grid.id'))
     lat = db.Column(db.Integer)
     long = db.Column(db.Integer)
