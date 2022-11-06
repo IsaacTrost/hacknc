@@ -4,6 +4,7 @@ from flask import render_template
 from backend import app, db
 from backend.utils import distance, insideGrid, GRID_SIZE
 from backend.models import Grid, User, Chat
+from random import randint
 
 from flask import request
 
@@ -33,6 +34,27 @@ def chat():
             Chat(grid_id=grid_id, name=user.name, content=message, time_stamp=time()))
         db.session.commit()
 
+@app.route("/user", methods=['POST'])
+def user():
+    latitude = request.args.get('latitude')
+    longitude = request.args.get('longitude')
+
+
+    # generate a random anon name
+    random = randint(0, 100000)
+    while db.session.query(User).filter(User.name == f'anon_{random}').limit(1).first() is not None:
+        rand = randint(0, 100000)
+
+    user = User(name=f'anon_{random}', latitude=latitude, longitude=longitude)
+
+    db.session.add(user)
+    db.session.commit()
+
+    return {
+        'name': user.name,
+        'latitude': user.latitude,
+        'longitude': user.longitude
+    }
 
 @app.route("/heartbeat", methods=['POST'])
 def heartbeat():
