@@ -1,12 +1,12 @@
-from flaskblog import db
+from backend import db
 
-from utils import GRID_SIZE
+from backend.utils import GRID_SIZE
 
 class Grid(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     inhabitants = db.relationship('User', backref='grid')
-    latitude = db.Column(db.Double)
-    longitude = db.Column(db.Double)
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
     chat_history = db.relationship('Chat', backref='grid')
 
     def __repr__(self):
@@ -14,7 +14,7 @@ class Grid(db.Model):
 
 class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    grid_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    grid_id = db.Column(db.Integer, db.ForeignKey('grid.id'))
     content = db.Column(db.Text, nullable=False)
 
     def __repr__(self):
