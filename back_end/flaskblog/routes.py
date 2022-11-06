@@ -31,5 +31,9 @@ def heartbeat():
 
     # finding distance relative to lat and long of center of grid
     d = distance(lat1=latitude_1, lat2=latitude_2, long1=longitude_1, long2=longitude_2)
+    
+    if d > GRID_SIZE:
+        # kick user out of current grid
+        # add them to new one
 
 
