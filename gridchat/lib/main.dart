@@ -224,17 +224,21 @@ class _ChatState extends State<Chat> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // NEW from here ...
-        floatingActionButton: FloatingActionButton(
+        floatingActionButton: FloatingActionButton.extended(
           // When the user presses the button, show an alert dialog containing
           // the text that the user has entered into the text field.
           onPressed: () {
             if (Text(myController.text) != null) {
-              _suggestions.add(myController.text);
+              _suggestions.insert(0, myController.text);
+              myController.text = "";
+              setState(() {
+                _suggestions;
+              });
             }
             ;
           },
-          child: const Icon(Icons.text_fields),
+          label: const Text('Send'),
+          icon: const Icon(Icons.send_rounded),
         ),
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -249,33 +253,12 @@ class _ChatState extends State<Chat> {
                 onPressed: _Refreash, icon: const Icon(Icons.chat_bubble)),
           ],
         ),
-        // #docregion itemBuilder
-        // body: ListView(
-        //   children: [
-        //     StickyHeader(
-        //         header: Padding(
-        //           padding: const EdgeInsets.all(16.0),
-        //           child: TextField(
-        //             controller: myController,
-        //           ),
-        //         ),
-        //         content: ListView.builder(
-        //             padding: const EdgeInsets.all(16.0),
-        //             itemCount: _suggestions.length,
-        //             itemBuilder: (BuildContext context, int index) {
-        //               return Container(
-        //                 height: 50,
-        //                 child: Center(child: Text('Test ${_suggestions[index]}')),
-        //               );
-        //             })),
-        //   ],
-        // ),
-
         body: CustomScrollView(
           reverse: true,
           slivers: [
             SliverPadding(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.only(
+                    right: 140.0, top: 20.0, left: 20.0, bottom: 20.0),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     <Widget>[
@@ -290,11 +273,13 @@ class _ChatState extends State<Chat> {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) {
+                      if (index.isOdd) return const Divider();
+                      index = index ~/ 2;
                       return Container(
                         child: Text('Item: ${_suggestions[index]}'),
                       );
                     },
-                    childCount: _suggestions.length,
+                    childCount: _suggestions.length * 2,
                   ),
                 )),
           ],
