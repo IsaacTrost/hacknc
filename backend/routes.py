@@ -40,9 +40,7 @@ def heartbeat():
                      long1=longitude_1, long2=longitude_2)
     else:
         g = create_new_grid(longitude_1, latitude_1)
-        return {
-            'NEW_GRID_ID': g.id
-        }
+        return sucesss_response(g)
 
     if d > GRID_SIZE:
         # remove user from current grid
@@ -60,12 +58,13 @@ def heartbeat():
 
         # else, create a new grid
         g = create_new_grid(longitude_1, latitude_1)
-        return {
-            'NEW_GRID_ID': g.id
-        }
+        return sucesss_response(g)
 
-    
 
+def sucesss_response(g):
+    return {
+        'GRID_ID': g.id
+    }
 
 def create_new_grid(longitude_1, latitude_1):
     grid = Grid(latitude=latitude_1, longitude=longitude_1)
