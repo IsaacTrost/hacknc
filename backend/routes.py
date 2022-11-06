@@ -11,6 +11,7 @@ from flask import request
 
 GRID_SIZE = 200  # grid size in feet FOR NOW
 
+@app.route("/")
 
 # get returns the chat history for a grid
 # post sends a chat message
@@ -24,7 +25,6 @@ def chat():
 
         for chat in grid.chat_history:
             messages[f'{chat.name}'].append(f'{chat.content}')
-            messages[f'{chat.name}'].append(f'{chat.time_stamp}')
 
         return messages
 
@@ -35,9 +35,19 @@ def chat():
 
         timestamp = datetime.fromtimestamp(time()).strftime('%Y-%m-%d %H:%M:%S')
 
+        # bypass the nullable bug
+        if message is None:
+            message = ""
+
         grid.chat_history.append(
             Chat(grid_id=grid_id, name=user.name, content=message, time_stamp=str(timestamp)))
+
         db.session.commit()
+    
+        return {
+            'user_id': id,
+            'content': message
+        }
 
 @app.route("/user", methods=['POST'])
 def user():
