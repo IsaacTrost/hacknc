@@ -6,14 +6,16 @@ from flaskblog import db
 from utils import distance
 from models import Grid
 
-GRID_SIZE = 200 # grid size in feet
+from flask import request
+
+GRID_SIZE = 100 # grid size in meters
 
 @app.route("/chat", methods=['GET', 'POST'])
 def chat():
     form = ChatForm()
 
     if form.valudate_on_submit():
-        chat = ChatForm(content=form.content.data)#how do i use the current grid id
+        chat = ChatForm(content=form.content.data, grid_id=request.args['current_grid'])#how do i use the current grid id
         db.session.add(chat)
         db.session.commit()
     
