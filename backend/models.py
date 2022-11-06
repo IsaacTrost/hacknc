@@ -25,9 +25,9 @@ class Chat(db.Model):
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), nullable=False)
-    grid_id = db.Column(db.Integer, db.ForeignKey('grid.id'))
-    lat = db.Column(db.Integer)
-    long = db.Column(db.Integer)
+    grid_id = db.Column(db.Integer, db.ForeignKey('grid.id'), nullable=True)
+    latitude = db.Column(db.Integer)
+    longitude = db.Column(db.Integer)
 
     def __repr__(self):
         return f"User('{self.id}', '{self.grid_id}', '{self.lat}', '{self.long}')"
