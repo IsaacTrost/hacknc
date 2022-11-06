@@ -24,6 +24,12 @@ class MyApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(
           backgroundColor: Color.fromARGB(255, 43, 43, 43),
           foregroundColor: Color.fromARGB(255, 151, 229, 201),
+          shape: Border(
+          bottom: BorderSide(
+            color: Color.fromARGB(255, 151, 229, 201),
+            width: 2
+          )
+        ),
         ),
       ),
       home: Map(),
@@ -50,14 +56,30 @@ class _MapState extends State<Map> {
 
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('HLLN'),
+      appBar: 
+      
+      AppBar(
+
+        
+        title: Image.network(
+          // <-- SEE HERE
+          'https://iili.io/msFVKG.md.png', height: 50, 
+        ),
         actions: [
-          IconButton(onPressed: _nothing, icon: const Icon(Icons.map_rounded)),
-          IconButton(onPressed: _pushChat, icon: const Icon(Icons.chat_bubble)),
         ],
+        
+        toolbarHeight: 100,
+        shape: Border(
+          bottom: BorderSide(
+            color: Color.fromARGB(255, 151, 229, 201),
+            width: 2
+          )
+        ),
+
+        
       ),
-      body: GoogleMap(
+      body: 
+      GoogleMap(
         mapType: MapType.hybrid,
         initialCameraPosition:
             _here ?? CameraPosition(target: LatLng(30.0, 30.0), zoom: 1),
@@ -77,10 +99,19 @@ class _MapState extends State<Map> {
         myLocationEnabled: true,
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _Go30,
-        label: Text('LLl'),
-        icon: Icon(Icons.directions_boat),
+        onPressed: _pushChat,
+        label: Text('Chat with your grid', style: TextStyle(fontWeight: FontWeight.bold),),
+        icon: Icon(Icons.attach_email_outlined),
+        backgroundColor: Color.fromARGB(255, 151, 229, 201),
+        foregroundColor: Color.fromARGB(255, 43, 43, 43),
+        extendedPadding: const EdgeInsets.all(75.0),
+      
+        
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      backgroundColor: Color.fromARGB(255, 43, 43, 43),
+      
+
     );
   }
 
@@ -164,33 +195,39 @@ class _ChatState extends State<Chat> {
   // #docregion RWS-build
   @override
   Widget build(BuildContext context) {
+    DateTime now = DateTime.now();
     return Scaffold(
       // NEW from here ...
       floatingActionButton: FloatingActionButton(
         // When the user presses the button, show an alert dialog containing
         // the text that the user has entered into the text field.
         onPressed: () {
-          if (Text(myController.text) != null) {
+          _suggestions.length++;
             _suggestions.add(myController.text);
-          }
-          ;
         },
-        child: const Icon(Icons.text_fields),
+        child: const Icon(Icons.send),
+        backgroundColor: Color.fromARGB(255, 151, 229, 201),
+        foregroundColor: Color.fromARGB(255, 43, 43, 43),
       ),
+      backgroundColor: Color.fromARGB(255, 43, 43, 43),
       appBar: AppBar(
         title: Image.network(
+          
           // <-- SEE HERE
           'https://iili.io/msFVKG.md.png', height: 50,
         ),
+        toolbarHeight: 100,
       ),
       // #docregion itemBuilder
       body: ListView.builder(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0),
           itemCount: _suggestions.length,
           itemBuilder: (BuildContext context, int index) {
             return Container(
-              height: 50,
-              child: Center(child: Text('Test ${_suggestions[index]}')),
+              
+              height: 30,
+              
+              child: Text(' ${now.hour.toString() + ":" + now.minute.toString() + ":" + now.second.toString() + "      " + _suggestions[index]}', style: TextStyle(color: Color.fromARGB(255, 151, 229, 201))),
             );
           }),
     );
