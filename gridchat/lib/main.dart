@@ -315,16 +315,37 @@ class _ChatState extends State<Chat> {
           reverse: true,
           slivers: [
             SliverPadding(
-                padding: const EdgeInsets.all(20.0),
+                    padding: const EdgeInsets.only(
+      left: 20,
+      top: 20,
+      right: 150,
+      bottom: 15,
+    ),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     <Widget>[
+                      
                       TextField(
+                        
                         controller: myController,
                         decoration: InputDecoration(
-    filled: true, //<-- SEE HERE
-    fillColor: Colors.white, //<-- SEE HERE
+                          hintText: "Type here...",
+                          contentPadding: EdgeInsets.only(
+      left: 20,
+      right: 20,
+    ),
+                          
+                          
+                           filled: true, //<-- SEE HERE
+                            fillColor: Colors.white, //<-- SEE HERE
+                            border: OutlineInputBorder(
+      borderSide:
+          BorderSide(width: 3, color: Color.fromARGB(255, 151, 229, 201)), //<-- SEE HERE
+      borderRadius: BorderRadius.circular(50.0),
+    ),
+    
   ),
+
                       ),
                     ],
                   ),
