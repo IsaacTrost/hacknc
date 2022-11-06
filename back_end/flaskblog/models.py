@@ -1,5 +1,6 @@
 from flaskblog import db
 
+from utils import GRID_SIZE
 
 class Grid(db.Model):
     id = db.Column(db.Integer, primary_key=True)
