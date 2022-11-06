@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
+import 'dart:math';
 
 //import 'location.dart';
 
@@ -40,49 +41,39 @@ class Message {
 }
 
 class _MapState extends State<Map> {
-  final _suggestions = <Message>[];
-  final _saved = <Message>{};
-  final _biggerFont = const TextStyle(fontSize: 18);
+  Set<Polyline> gridLines = {};
   LocationData? _currentPosition;
   Location location = new Location();
+  var gridCellCenter = [-78, 35];
   Completer<GoogleMapController> _controller = Completer();
   CameraPosition? _here;
 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+            onPressed: _nothing, icon: const Icon(Icons.map_rounded)),
         title: Image.network(
           // <-- SEE HERE
           'https://iili.io/msFVKG.md.png', height: 50,
         ),
         actions: [
-          IconButton(onPressed: _nothing, icon: const Icon(Icons.map_rounded)),
           IconButton(onPressed: _pushChat, icon: const Icon(Icons.chat_bubble)),
         ],
       ),
       body: GoogleMap(
         mapType: MapType.hybrid,
+        polylines: gridLines,
         initialCameraPosition:
-            _here ?? CameraPosition(target: LatLng(30.0, 30.0), zoom: 1),
+            _here ?? CameraPosition(target: LatLng(30.0, 30.0), zoom: .8),
         onMapCreated: (GoogleMapController controller) async {
           _controller.complete(controller);
           final GoogleMapController cntr = await _controller.future;
           location.onLocationChanged.listen((l) {
-            cntr.animateCamera(
-              CameraUpdate.newCameraPosition(
-                CameraPosition(
-                    target: LatLng(l.latitude ?? 30.0, l.longitude ?? 30.0),
-                    zoom: 15),
-              ),
-            );
+            _GetLocalGrid(l);
           });
         },
         myLocationEnabled: true,
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _Go30,
-        label: Text('LLl'),
-        icon: Icon(Icons.directions_boat),
       ),
     );
   }
@@ -93,6 +84,7 @@ class _MapState extends State<Map> {
   }
 
   void _pushChat() {
+    print("asdf");
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => Chat(), fullscreenDialog: false),
     );
@@ -103,6 +95,48 @@ class _MapState extends State<Map> {
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newCameraPosition(
         CameraPosition(target: LatLng(30, 30), zoom: 1)));
+  }
+
+  double calculateDistance(lat1, lon1, lat2, lon2) {
+    var p = 0.017453292519943295;
+    var a = 0.5 -
+        cos((lat2 - lat1) * p) / 2 +
+        cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2;
+    return 12.742 * asin(sqrt(a));
+  }
+
+  void _GetLocalGrid(LocationData l) {
+    final Set<Polyline> locGridLines = {};
+    final convert = (1 / 111111) * 50;
+    var lat = l.latitude ?? 20.0;
+    var long = l.longitude ?? 20.0;
+    var negx = lat - convert;
+    var posx = lat + convert;
+    var negy = long - convert;
+    var posy = long + convert;
+    List<LatLng> latlng = [
+      LatLng(negx - convert, negy),
+      LatLng(posx + convert, negy),
+      LatLng(negx - convert, posy),
+      LatLng(posx + convert, posy),
+      LatLng(posx, negy - convert),
+      LatLng(posx, posy + convert),
+      LatLng(negx, negy - convert),
+      LatLng(negx, posy + convert)
+    ];
+    for (var i = 0; i < 4; i++) {
+      print("HIHIHI");
+      locGridLines.add(Polyline(
+        polylineId: PolylineId(i.toString()),
+        visible: true,
+        width: 1,
+        points: latlng.sublist(i * 2, i * 2 + 2),
+        color: Colors.blue,
+      ));
+    }
+    setState(() {
+      gridLines = locGridLines;
+    });
   }
 
   fetchLocation() async {
@@ -181,12 +215,14 @@ class _ChatState extends State<Chat> {
         child: const Icon(Icons.text_fields),
       ),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+            onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
         title: Image.network(
           // <-- SEE HERE
           'https://iili.io/msFVKG.md.png', height: 50,
         ),
         actions: [
-          IconButton(onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
           IconButton(onPressed: _Refreash, icon: const Icon(Icons.chat_bubble)),
         ],
       ),
