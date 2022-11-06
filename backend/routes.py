@@ -24,6 +24,8 @@ def chat():
 
         for chat in grid.chat_history:
             messages[f'{chat.name}'].append(f'{chat.content}')
+            messages[f'{chat.name}'].append(f'{chat.time_stamp}')
+
         return messages
 
     elif request.method == 'POST':
@@ -64,7 +66,7 @@ def user():
 def heartbeat():
     # current lat and long
     latitude_1 = request.args.get('latitude_1')
-    longitude_1 = request.args.get('longitude_2')
+    longitude_1 = request.args.get('longitude_1')
     user_id = request.args.get('user_id')
     current_grid_id = request.args.get('current_grid')
 
