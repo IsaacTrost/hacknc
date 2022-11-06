@@ -7,6 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:sticky_headers/sticky_headers.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
@@ -242,6 +243,7 @@ class _ChatState extends State<Chat> {
   final _biggerFont = const TextStyle(fontSize: 18);
   LocationData? _currentPosition;
   Location location = new Location();
+  final DateFormat formatter = DateFormat('h:mm  M/d ');
 
   // #enddocregion RWS-var
 
@@ -329,11 +331,12 @@ class _ChatState extends State<Chat> {
                           title: Text(' ${_suggestions[index].content}',
                               style: TextStyle(
                                   color: Color.fromARGB(255, 151, 229, 201))),
-                          trailing: Text(_suggestions[index].time.toString(),
+                          trailing: Text(
+                              formatter.format(_suggestions[index].time),
                               style: TextStyle(
                                   color: Color.fromARGB(255, 151, 229, 201))));
                     },
-                    childCount: _suggestions.length,
+                    childCount: _suggestions.length * 2,
                   ),
                 )),
           ],
