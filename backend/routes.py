@@ -39,8 +39,10 @@ def heartbeat():
         d = distance(lat1=latitude_1, lat2=latitude_2,
                      long1=longitude_1, long2=longitude_2)
     else:
-        create_new_grid(longitude_1, latitude_1)
-        return
+        g = create_new_grid(longitude_1, latitude_1)
+        return {
+            'NEW_GRID_ID': g.id
+        }
 
     if d > GRID_SIZE:
         # remove user from current grid
@@ -54,13 +56,19 @@ def heartbeat():
             if insideGrid(latitude_1, longitude_2, latitude_2, longitude_2):
                 g.inhabitants.add(user_id)
                 db.session.commit()
-                return  # return if we find a grid
+                return # return if we find a grid
 
         # else, create a new grid
-        create_new_grid(longitude_1, latitude_1)
+        g = create_new_grid(longitude_1, latitude_1)
+        return {
+            'NEW_GRID_ID': g.id
+        }
+
+    
 
 
 def create_new_grid(longitude_1, latitude_1):
     grid = Grid(latitude=latitude_1, longitude=longitude_1)
     db.session.add(grid)
     db.session.commit()
+    return grid
