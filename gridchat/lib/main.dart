@@ -58,17 +58,21 @@ class _MapState extends State<Map> {
   var _gridCellCenters = <Cell>[];
   Completer<GoogleMapController> _controller = Completer();
   CameraPosition? _here;
-  var page2 = Chat();
 
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-            onPressed: _nothing, icon: const Icon(Icons.map_rounded)),
         title: Image.network(
           // <-- SEE HERE
           'https://iili.io/msFVKG.md.png', height: 50,
         ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 20.0),
+            child: IconButton(
+                onPressed: _pushBattery, icon: const Icon(Icons.battery_1_bar)),
+          )
+        ],
       ),
       body: GoogleMap(
         mapType: MapType.hybrid,
@@ -101,6 +105,13 @@ class _MapState extends State<Map> {
     );
   }
 
+  void _pushBattery() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (context) => Battery(), fullscreenDialog: false),
+    );
+  }
+
   void initState() {
     super.initState();
     fetchLocation();
@@ -109,7 +120,7 @@ class _MapState extends State<Map> {
   void _pushChat() {
     print("asdf");
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => page2, fullscreenDialog: false),
+      MaterialPageRoute(builder: (context) => Chat(), fullscreenDialog: false),
     );
   }
 
@@ -261,19 +272,43 @@ class _ChatState extends State<Chat> {
         backgroundColor: Color.fromARGB(255, 43, 43, 43),
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          leading: IconButton(
-              onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
+          leading: Container(
+            margin: const EdgeInsets.only(left: 20.0),
+            child: IconButton(
+                onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
+          ),
           title: Image.network(
             // <-- SEE HERE
             'https://iili.io/msFVKG.md.png', height: 50,
           ),
         ),
+        // #docregion itemBuilder
+        // body: ListView(
+        //   children: [
+        //     StickyHeader(
+        //         header: Padding(
+        //           padding: const EdgeInsets.all(16.0),
+        //           child: TextField(
+        //             controller: myController,
+        //           ),
+        //         ),
+        //         content: ListView.builder(
+        //             padding: const EdgeInsets.all(16.0),
+        //             itemCount: _suggestions.length,
+        //             itemBuilder: (BuildContext context, int index) {
+        //               return Container(
+        //                 height: 50,
+        //                 child: Center(child: Text('Test ${_suggestions[index]}')),
+        //               );
+        //             })),
+        //   ],
+        // ),
+
         body: CustomScrollView(
           reverse: true,
           slivers: [
             SliverPadding(
-                padding: const EdgeInsets.only(
-                    right: 140.0, top: 20.0, left: 20.0, bottom: 20.0),
+                padding: const EdgeInsets.all(20.0),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     <Widget>[
@@ -298,7 +333,7 @@ class _ChatState extends State<Chat> {
                               style: TextStyle(
                                   color: Color.fromARGB(255, 151, 229, 201))));
                     },
-                    childCount: _suggestions.length * 2,
+                    childCount: _suggestions.length,
                   ),
                 )),
           ],
@@ -357,4 +392,91 @@ class Chat extends StatefulWidget {
 
   @override
   State<Chat> createState() => _ChatState();
+}
+
+class _BatteryState extends State<Battery> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: Container(
+            margin: const EdgeInsets.only(left: 20.0),
+            child: IconButton(
+                onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
+          ),
+          title: Text("Is my phone dead?"),
+          actions: [
+            Container(
+              margin: const EdgeInsets.only(right: 20.0),
+              child: IconButton(
+                  onPressed: _pushClock, icon: const Icon(Icons.alarm)),
+            ),
+          ],
+        ),
+        body: Text("No. Your phone is not dead."));
+    // #enddocregion itemBuilder
+  }
+
+  void _BackMap() {
+    Navigator.pop(context);
+  }
+
+  void _pushClock() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => Clock(), fullscreenDialog: false),
+    );
+  }
+  // #enddocregion RWS-build
+  // #docregion RWS-var
+}
+// #enddocregion RWS-var
+
+class Battery extends StatefulWidget {
+  const Battery({super.key});
+
+  @override
+  State<Battery> createState() => _BatteryState();
+}
+
+class _ClockState extends State<Clock> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: Container(
+            margin: const EdgeInsets.only(left: 20.0),
+            child: IconButton(
+                onPressed: _BackMap, icon: const Icon(Icons.battery_1_bar)),
+          ),
+          title: Text("What time is it?"),
+        ),
+        body: Image.network(
+          // <-- SEE HERE
+          'https://media.giphy.com/avatars/Bojangles1977/mQphNcfEoEmA.gif',
+          width: 10000,
+        ));
+    // #enddocregion itemBuilder
+  }
+
+  void _BackMap() {
+    Navigator.pop(context);
+  }
+
+  void _pushClock() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => Clock(), fullscreenDialog: false),
+    );
+  }
+  // #enddocregion RWS-build
+  // #docregion RWS-var
+}
+// #enddocregion RWS-var
+
+class Clock extends StatefulWidget {
+  const Clock({super.key});
+
+  @override
+  State<Clock> createState() => _ClockState();
 }
