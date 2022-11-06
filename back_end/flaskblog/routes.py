@@ -52,6 +52,12 @@ def heartbeat():
         for g in all:
             if insideGrid(latitude_1, longitude_2, latitude_2, longitude_2):
                 g.inhabitants.add(user_id)
-                break
+                db.session.commit()
+                return # return if we find a grid
 
+        # else, create a new grid
+        grid = Grid(latitude_1, latitude_2) 
+        db.session.add(grid)
         db.session.commit()
+    
+
