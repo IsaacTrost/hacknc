@@ -26,11 +26,8 @@ class MyApp extends StatelessWidget {
           foregroundColor: Color.fromARGB(255, 151, 229, 201),
           toolbarHeight: 100,
           shape: Border(
-          bottom: BorderSide(
-            color: Color.fromARGB(255, 151, 229, 201),
-            width: 2
-          )
-        ),
+              bottom: BorderSide(
+                  color: Color.fromARGB(255, 151, 229, 201), width: 2)),
         ),
       ),
       home: Map(),
@@ -62,6 +59,7 @@ class _MapState extends State<Map> {
   var _gridCellCenters = <Cell>[];
   Completer<GoogleMapController> _controller = Completer();
   CameraPosition? _here;
+  var page2 = Chat();
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,7 +70,6 @@ class _MapState extends State<Map> {
           // <-- SEE HERE
           'https://iili.io/msFVKG.md.png', height: 50,
         ),
-
       ),
       body: GoogleMap(
         mapType: MapType.hybrid,
@@ -88,17 +85,17 @@ class _MapState extends State<Map> {
           });
         },
         myLocationEnabled: true,
-        
       ),
-            floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: _pushChat,
-        label: Text('Chat with your grid', style: TextStyle(fontWeight: FontWeight.bold),),
+        label: Text(
+          'Chat with your grid',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         icon: Icon(Icons.attach_email_outlined),
         backgroundColor: Color.fromARGB(255, 151, 229, 201),
         foregroundColor: Color.fromARGB(255, 43, 43, 43),
         extendedPadding: const EdgeInsets.all(75.0),
-      
-        
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       backgroundColor: Color.fromARGB(255, 43, 43, 43),
@@ -113,7 +110,7 @@ class _MapState extends State<Map> {
   void _pushChat() {
     print("asdf");
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => Chat(), fullscreenDialog: false),
+      MaterialPageRoute(builder: (context) => page2, fullscreenDialog: false),
     );
   }
 
@@ -243,20 +240,25 @@ class _ChatState extends State<Chat> {
   Widget build(BuildContext context) {
     DateTime now = DateTime.now();
     return Scaffold(
-      
-        // NEW from here ...
-              floatingActionButton: FloatingActionButton(
-        // When the user presses the button, show an alert dialog containing
-        // the text that the user has entered into the text field.
-        onPressed: () {
-          _suggestions.length++;
-            _suggestions.add(myController.text);
-        },
-        child: const Icon(Icons.send),
-        backgroundColor: Color.fromARGB(255, 151, 229, 201),
-        foregroundColor: Color.fromARGB(255, 43, 43, 43),
-      ),
-      backgroundColor: Color.fromARGB(255, 43, 43, 43),
+        floatingActionButton: FloatingActionButton.extended(
+          // When the user presses the button, show an alert dialog containing
+          // the text that the user has entered into the text field.
+          onPressed: () {
+            if (Text(myController.text) != null) {
+              _suggestions.insert(0, myController.text);
+              myController.text = "";
+              setState(() {
+                _suggestions;
+              });
+            }
+            ;
+          },
+          label: const Text('Send'),
+          icon: const Icon(Icons.send_rounded),
+          backgroundColor: Color.fromARGB(255, 151, 229, 201),
+          foregroundColor: Color.fromARGB(255, 43, 43, 43),
+        ),
+        backgroundColor: Color.fromARGB(255, 43, 43, 43),
         appBar: AppBar(
           automaticallyImplyLeading: false,
           leading: IconButton(
@@ -265,36 +267,13 @@ class _ChatState extends State<Chat> {
             // <-- SEE HERE
             'https://iili.io/msFVKG.md.png', height: 50,
           ),
-
         ),
-        // #docregion itemBuilder
-        // body: ListView(
-        //   children: [
-        //     StickyHeader(
-        //         header: Padding(
-        //           padding: const EdgeInsets.all(16.0),
-        //           child: TextField(
-        //             controller: myController,
-        //           ),
-        //         ),
-        //         content: ListView.builder(
-        //             padding: const EdgeInsets.all(16.0),
-        //             itemCount: _suggestions.length,
-        //             itemBuilder: (BuildContext context, int index) {
-        //               return Container(
-        //                 height: 50,
-        //                 child: Center(child: Text('Test ${_suggestions[index]}')),
-        //               );
-        //             })),
-        //   ],
-        // ),
-
         body: CustomScrollView(
           reverse: true,
-          
           slivers: [
             SliverPadding(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.only(
+                    right: 140.0, top: 20.0, left: 20.0, bottom: 20.0),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     <Widget>[
@@ -309,13 +288,17 @@ class _ChatState extends State<Chat> {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) {
+                      if (index.isOdd) return const Divider();
+                      index = index ~/ 2;
                       return Container(
                         height: 30,
-              
-              child: Text(' ${now.hour.toString() + ":" + now.minute.toString() + ":" + now.second.toString() + "      " + _suggestions[index]}', style: TextStyle(color: Color.fromARGB(255, 151, 229, 201))),
+                        child: Text(
+                            ' ${now.hour.toString() + ":" + now.minute.toString() + ":" + now.second.toString() + "      " + _suggestions[index]}',
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 151, 229, 201))),
                       );
                     },
-                    childCount: _suggestions.length,
+                    childCount: _suggestions.length * 2,
                   ),
                 )),
           ],
