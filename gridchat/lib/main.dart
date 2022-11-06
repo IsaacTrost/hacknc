@@ -91,15 +91,16 @@ class _MapState extends State<Map> {
 
   void _pushChat() {
     Navigator.of(context).push(
-    )
+      MaterialPageRoute(builder: (context) => Chat(), fullscreenDialog: false),
+    );
   }
+
   void _nothing() {}
   Future<void> _Go30() async {
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newCameraPosition(
         CameraPosition(target: LatLng(30, 30), zoom: 1)));
   }
-
 
   fetchLocation() async {
     bool _serviceEnabled;
@@ -146,4 +147,101 @@ class Map extends StatefulWidget {
 
   @override
   State<Map> createState() => _MapState();
+}
+
+class _ChatState extends State<Chat> {
+  final List<String> _suggestions = <String>[
+    "asdfay a ",
+    "a'lf yawom fha9isuf"
+  ];
+  final _saved = <Text>{};
+  final _biggerFont = const TextStyle(fontSize: 18);
+  LocationData? _currentPosition;
+  Location location = new Location();
+
+  // #enddocregion RWS-var
+
+  // #docregion RWS-build
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // NEW from here ...
+      floatingActionButton: FloatingActionButton(
+        // When the user presses the button, show an alert dialog containing
+        // the text that the user has entered into the text field.
+        onPressed: () {
+          if (Text(myController.text) != null) {
+            _suggestions.add(myController.text);
+          }
+          ;
+        },
+        child: const Icon(Icons.text_fields),
+      ),
+      appBar: AppBar(
+        title: Image.network(
+          // <-- SEE HERE
+          'https://iili.io/msFVKG.md.png', height: 50,
+        ),
+      ),
+      // #docregion itemBuilder
+      body: ListView.builder(
+          padding: const EdgeInsets.all(16.0),
+          itemCount: _suggestions.length,
+          itemBuilder: (BuildContext context, int index) {
+            return Container(
+              height: 50,
+              child: Center(child: Text('Test ${_suggestions[index]}')),
+            );
+          }),
+    );
+    // #enddocregion itemBuilder
+  }
+
+  void initState() {
+    super.initState();
+    fetchLocation();
+  }
+
+  fetchLocation() async {
+    bool _serviceEnabled;
+    PermissionStatus _permissionGranted;
+
+    _serviceEnabled = await location.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await location.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await location.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await location.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+
+    _currentPosition = await location.getLocation();
+    location.onLocationChanged.listen((LocationData currentLocation) {});
+  }
+  // #enddocregion RWS-build
+  // #docregion RWS-var
+
+  final myController = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    myController.dispose();
+    super.dispose();
+  }
+}
+// #enddocregion RWS-var
+
+class Chat extends StatefulWidget {
+  const Chat({super.key});
+
+  @override
+  State<Chat> createState() => _ChatState();
 }
