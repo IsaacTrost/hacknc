@@ -1,21 +1,18 @@
 import os
 from flask import render_template
-from back_end.grid import app
-from grid import db
+from backend import app, db 
 from utils import distance, insideGrid, GRID_SIZE
 from models import Grid
 
 from flask import request
 
-GRID_SIZE = 100  # grid size in meters
-
+GRID_SIZE = 200  # grid size in feet FOR NOW 
 
 @app.route("/chat", methods=['GET', 'POST'])
 def chat():
     form = ChatForm()
 
     if form.valudate_on_submit():
-        # how do i use the current grid id
         chat = ChatForm(content=form.content.data,
                         grid_id=request.args['current_grid'])
         db.session.add(chat)
