@@ -7,7 +7,6 @@ class Grid(db.Model):
     inhabitants = db.relationship('User', backref='grid')
     latitude = db.Column(db.Double)
     longitude = db.Column(db.Double)
-    size = db.Column(db.Integer)
     chat_history = db.relationship('Chat', backref='grid')
 
     def __repr__(self):
