@@ -51,7 +51,10 @@ class _MapState extends State<Map> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('HLLN'),
+        title: Image.network(
+          // <-- SEE HERE
+          'https://iili.io/msFVKG.md.png', height: 50,
+        ),
         actions: [
           IconButton(onPressed: _nothing, icon: const Icon(Icons.map_rounded)),
           IconButton(onPressed: _pushChat, icon: const Icon(Icons.chat_bubble)),
@@ -182,6 +185,10 @@ class _ChatState extends State<Chat> {
           // <-- SEE HERE
           'https://iili.io/msFVKG.md.png', height: 50,
         ),
+        actions: [
+          IconButton(onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
+          IconButton(onPressed: _Refreash, icon: const Icon(Icons.chat_bubble)),
+        ],
       ),
       // #docregion itemBuilder
       body: ListView.builder(
@@ -232,10 +239,16 @@ class _ChatState extends State<Chat> {
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
+    // Clean up the controller when the widget is disposed.5
     myController.dispose();
     super.dispose();
   }
+
+  void _BackMap() {
+    Navigator.pop(context);
+  }
+
+  void _Refreash() {}
 }
 // #enddocregion RWS-var
 
