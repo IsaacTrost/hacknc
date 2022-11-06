@@ -24,6 +24,10 @@ class MyApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(
           backgroundColor: Color.fromARGB(255, 43, 43, 43),
           foregroundColor: Color.fromARGB(255, 151, 229, 201),
+          toolbarHeight: 100,
+          shape: Border(
+              bottom: BorderSide(
+                  color: Color.fromARGB(255, 151, 229, 201), width: 2)),
         ),
       ),
       home: Map(),
@@ -55,6 +59,7 @@ class _MapState extends State<Map> {
   var _gridCellCenters = <Cell>[];
   Completer<GoogleMapController> _controller = Completer();
   CameraPosition? _here;
+  var page2 = Chat();
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,9 +70,6 @@ class _MapState extends State<Map> {
           // <-- SEE HERE
           'https://iili.io/msFVKG.md.png', height: 50,
         ),
-        actions: [
-          IconButton(onPressed: _pushChat, icon: const Icon(Icons.chat_bubble)),
-        ],
       ),
       body: GoogleMap(
         mapType: MapType.hybrid,
@@ -84,6 +86,19 @@ class _MapState extends State<Map> {
         },
         myLocationEnabled: true,
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _pushChat,
+        label: Text(
+          'Chat with your grid',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        icon: Icon(Icons.attach_email_outlined),
+        backgroundColor: Color.fromARGB(255, 151, 229, 201),
+        foregroundColor: Color.fromARGB(255, 43, 43, 43),
+        extendedPadding: const EdgeInsets.all(75.0),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      backgroundColor: Color.fromARGB(255, 43, 43, 43),
     );
   }
 
@@ -95,7 +110,7 @@ class _MapState extends State<Map> {
   void _pushChat() {
     print("asdf");
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => Chat(), fullscreenDialog: false),
+      MaterialPageRoute(builder: (context) => page2, fullscreenDialog: false),
     );
   }
 
@@ -223,6 +238,7 @@ class _ChatState extends State<Chat> {
   // #docregion RWS-build
   @override
   Widget build(BuildContext context) {
+    DateTime now = DateTime.now();
     return Scaffold(
         floatingActionButton: FloatingActionButton.extended(
           // When the user presses the button, show an alert dialog containing
@@ -239,7 +255,10 @@ class _ChatState extends State<Chat> {
           },
           label: const Text('Send'),
           icon: const Icon(Icons.send_rounded),
+          backgroundColor: Color.fromARGB(255, 151, 229, 201),
+          foregroundColor: Color.fromARGB(255, 43, 43, 43),
         ),
+        backgroundColor: Color.fromARGB(255, 43, 43, 43),
         appBar: AppBar(
           automaticallyImplyLeading: false,
           leading: IconButton(
@@ -248,10 +267,6 @@ class _ChatState extends State<Chat> {
             // <-- SEE HERE
             'https://iili.io/msFVKG.md.png', height: 50,
           ),
-          actions: [
-            IconButton(
-                onPressed: _Refreash, icon: const Icon(Icons.chat_bubble)),
-          ],
         ),
         body: CustomScrollView(
           reverse: true,
@@ -276,7 +291,11 @@ class _ChatState extends State<Chat> {
                       if (index.isOdd) return const Divider();
                       index = index ~/ 2;
                       return Container(
-                        child: Text('Item: ${_suggestions[index]}'),
+                        height: 30,
+                        child: Text(
+                            ' ${now.hour.toString() + ":" + now.minute.toString() + ":" + now.second.toString() + "      " + _suggestions[index]}',
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 151, 229, 201))),
                       );
                     },
                     childCount: _suggestions.length * 2,
