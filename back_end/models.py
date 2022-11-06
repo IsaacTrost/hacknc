@@ -15,8 +15,8 @@ class User(db.Model):
 class Chatter(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   grid_id = db.Column(db.Integer, unique=True) # should correlate to grid ID
-  sender = db.Column(db.String(50), unique=True, nullable=False)
-  message = db.Column(db.String(200), nullable=False)
+  sender = db.Column(db.String(48), unique=True, nullable=False)
+  message = db.Column(db.String(198), nullable=False)
 
   def __repr__(self):
     return f'Chatter({self.grid_id}, {self.sender}, {self.message})'
