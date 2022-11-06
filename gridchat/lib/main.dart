@@ -66,12 +66,18 @@ class _MapState extends State<Map> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-            onPressed: _nothing, icon: const Icon(Icons.map_rounded)),
+
         title: Image.network(
           // <-- SEE HERE
           'https://iili.io/msFVKG.md.png', height: 50,
         ),
+        actions: [
+          Container(
+    margin: const EdgeInsets.only(right: 20.0),
+    child : IconButton(
+            onPressed: _pushBattery, icon: const Icon(Icons.battery_1_bar)),
+          )
+          ],
 
       ),
       body: GoogleMap(
@@ -105,6 +111,11 @@ class _MapState extends State<Map> {
     );
   }
 
+  void _pushBattery() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => Battery(), fullscreenDialog: false),
+    );
+  }
   void initState() {
     super.initState();
     fetchLocation();
@@ -259,8 +270,11 @@ class _ChatState extends State<Chat> {
       backgroundColor: Color.fromARGB(255, 43, 43, 43),
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          leading: IconButton(
-              onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
+                    leading:           Container(
+    margin: const EdgeInsets.only(left: 20.0),
+    child : IconButton(
+            onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
+          ),
           title: Image.network(
             // <-- SEE HERE
             'https://iili.io/msFVKG.md.png', height: 50,
@@ -374,4 +388,108 @@ class Chat extends StatefulWidget {
 
   @override
   State<Chat> createState() => _ChatState();
+}
+
+
+class _BatteryState extends State<Battery> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      
+       
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+
+          leading:           Container(
+    margin: const EdgeInsets.only(left: 20.0),
+    child : IconButton(
+            onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
+          ),
+          title: Text("Is my phone dead?"),
+
+          actions: [
+            Container(
+    margin: const EdgeInsets.only(right: 20.0),
+    child : IconButton(
+            onPressed: _pushClock, icon: const Icon(Icons.alarm)),
+          ),
+          ],
+
+        ),
+
+        body: Text("No. Your phone is not dead."));
+    // #enddocregion itemBuilder
+  }
+
+
+
+    void _BackMap() {
+    Navigator.pop(context);
+  }
+
+  void _pushClock() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => Clock(), fullscreenDialog: false),
+    );
+  }
+  // #enddocregion RWS-build
+  // #docregion RWS-var
+}
+// #enddocregion RWS-var
+
+class Battery extends StatefulWidget {
+  const Battery({super.key});
+
+  @override
+  State<Battery> createState() => _BatteryState();
+}
+
+
+class _ClockState extends State<Clock> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      
+       
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+
+          leading:           Container(
+    margin: const EdgeInsets.only(left: 20.0),
+    child : IconButton(
+            onPressed: _BackMap, icon: const Icon(Icons.battery_1_bar)),
+          ),
+          title: Text("What time is it?"),
+
+
+        ),
+
+        body: Image.network(
+          // <-- SEE HERE
+          'https://media.giphy.com/avatars/Bojangles1977/mQphNcfEoEmA.gif', width: 10000,
+        ));
+    // #enddocregion itemBuilder
+  }
+
+
+
+    void _BackMap() {
+    Navigator.pop(context);
+  }
+
+  void _pushClock() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => Clock(), fullscreenDialog: false),
+    );
+  }
+  // #enddocregion RWS-build
+  // #docregion RWS-var
+}
+// #enddocregion RWS-var
+
+class Clock extends StatefulWidget {
+  const Clock({super.key});
+
+  @override
+  State<Clock> createState() => _ClockState();
 }
