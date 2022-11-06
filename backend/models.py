@@ -10,7 +10,7 @@ class Grid(db.Model):
     chat_history = db.relationship('Chat', backref='grid')
 
     def __repr__(self):
-        return f"User('{self.id}', '{self.x}', '{self.y}')"
+        return f"Grid('{self.id}', '{self.inhabitants}', '{self.latitude}', '{self.longitude}', '{self.chat_history}')"
 
 class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -27,4 +27,4 @@ class User(db.Model):
     long = db.Column(db.Integer)
 
     def __repr__(self):
-        return f"User('{self.id}', '{self.x}', '{self.y}')"
+        return f"User('{self.id}', '{self.grid_id}', '{self.lat}', '{self.long}')"
