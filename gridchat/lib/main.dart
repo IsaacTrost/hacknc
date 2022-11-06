@@ -1,12 +1,10 @@
-// Copyright 2018 The Flutter team. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 import 'dart:developer';
 
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:async';
 
 //import 'location.dart';
 
@@ -14,14 +12,6 @@ void main() {
   runApp(const MyApp());
 }
 
-class Message {
-  String content;
-
-  Message(this.content);
-  Message.unnamed() : content = 'FUCK';
-}
-
-// #docregion MyApp
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -36,82 +26,80 @@ class MyApp extends StatelessWidget {
           foregroundColor: Color.fromARGB(255, 151, 229, 201),
         ),
       ),
-      home: Chat(),
+      home: Map(),
     );
   }
   // #enddocregion build
 }
-// #enddocregion MyApp
 
-// #docregion RWS-var
-class _ChatState extends State<Chat> {
+class Message {
+  String content;
+
+  Message(this.content);
+  Message.unnamed() : content = 'FUCK';
+}
+
+class _MapState extends State<Map> {
   final _suggestions = <Message>[];
   final _saved = <Message>{};
   final _biggerFont = const TextStyle(fontSize: 18);
   LocationData? _currentPosition;
   Location location = new Location();
+  Completer<GoogleMapController> _controller = Completer();
+  CameraPosition? _here;
 
-  // #enddocregion RWS-var
-
-  // #docregion RWS-build
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // NEW from here ...
       appBar: AppBar(
         title: const Text('HLLN'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.access_alarm_outlined),
-            onPressed: _pushSaved,
-            tooltip: 'Saved Suggestions',
-          ),
+          IconButton(onPressed: _nothing, icon: const Icon(Icons.map_rounded)),
+          IconButton(onPressed: _pushChat, icon: const Icon(Icons.chat_bubble)),
         ],
       ),
-      // #docregion itemBuilder
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemBuilder: /*1*/ (context, i) {
-          if (i.isOdd) return const Divider(); /*2*/
-
-          final index = i ~/ 2; /*3*/
-          if (index >= _suggestions.length) {
-            _suggestions.addAll(getMessages(10)); /*4*/
-          }
-          final alreadySaved = _saved.contains(_suggestions[index]);
-          // #docregion listTile
-          return ListTile(
-              title: Text(
-                _suggestions[index].content,
-                style: _biggerFont,
+      body: GoogleMap(
+        mapType: MapType.hybrid,
+        initialCameraPosition:
+            _here ?? CameraPosition(target: LatLng(30.0, 30.0), zoom: 1),
+        onMapCreated: (GoogleMapController controller) async {
+          _controller.complete(controller);
+          final GoogleMapController cntr = await _controller.future;
+          location.onLocationChanged.listen((l) {
+            cntr.animateCamera(
+              CameraUpdate.newCameraPosition(
+                CameraPosition(
+                    target: LatLng(l.latitude ?? 30.0, l.longitude ?? 30.0),
+                    zoom: 15),
               ),
-              trailing: Icon(
-                // NEW from here ...
-                alreadySaved ? Icons.favorite : Icons.favorite_border,
-                color: alreadySaved ? Colors.red : null,
-                semanticLabel: alreadySaved ? 'Remove from saved' : 'Save',
-              ),
-              onTap: () {
-                // NEW from here ...
-                setState(() {
-                  if (alreadySaved) {
-                    _saved.remove(_suggestions[index]);
-                  } else {
-                    _saved.add(_suggestions[index]);
-                  }
-                });
-              });
-          // #enddocregion listTile
+            );
+          });
         },
+        myLocationEnabled: true,
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _Go30,
+        label: Text('LLl'),
+        icon: Icon(Icons.directions_boat),
       ),
     );
-    // #enddocregion itemBuilder
   }
 
   void initState() {
     super.initState();
     fetchLocation();
   }
+
+  void _pushChat() {
+    Navigator.of(context).push(
+    )
+  }
+  void _nothing() {}
+  Future<void> _Go30() async {
+    final GoogleMapController controller = await _controller.future;
+    controller.animateCamera(CameraUpdate.newCameraPosition(
+        CameraPosition(target: LatLng(30, 30), zoom: 1)));
+  }
+
 
   fetchLocation() async {
     bool _serviceEnabled;
@@ -134,60 +122,28 @@ class _ChatState extends State<Chat> {
     }
 
     _currentPosition = await location.getLocation();
-    location.onLocationChanged.listen((LocationData currentLocation) {});
-  }
-
-  getMessages(int x) {
-    var returny = <Message>[];
-    for (int i = 0; i < x; i++) {
-      if (_currentPosition == null) {
-        returny.add(Message("ASDF"));
-      } else {
-        returny.add(Message(_currentPosition?.latitude.toString() ?? "asdf"));
-      }
+    if (_currentPosition != null) {
+      _here = CameraPosition(
+        target: LatLng(_currentPosition?.latitude ?? 1.0,
+            _currentPosition?.longitude ?? 1.0),
+        zoom: 14.4746,
+      );
     }
-    return returny;
+    location.onLocationChanged.listen((LocationData currentLocation) {
+      if (_currentPosition != null) {
+        _here = CameraPosition(
+          target: LatLng(_currentPosition?.latitude ?? 1.0,
+              _currentPosition?.longitude ?? 1.0),
+          zoom: 14.4746,
+        );
+      }
+    });
   }
-
-  void _pushSaved() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) {
-          final tiles = _saved.map(
-            (pair) {
-              return ListTile(
-                title: Text(
-                  pair.content,
-                  style: _biggerFont,
-                ),
-              );
-            },
-          );
-          final divided = tiles.isNotEmpty
-              ? ListTile.divideTiles(
-                  context: context,
-                  tiles: tiles,
-                ).toList()
-              : <Widget>[];
-
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Saved Suggestions'),
-            ),
-            body: ListView(children: divided),
-          );
-        },
-      ),
-    );
-  }
-  // #enddocregion RWS-build
-  // #docregion RWS-var
 }
-// #enddocregion RWS-var
 
-class Chat extends StatefulWidget {
-  const Chat({super.key});
+class Map extends StatefulWidget {
+  const Map({super.key});
 
   @override
-  State<Chat> createState() => _ChatState();
+  State<Map> createState() => _MapState();
 }
