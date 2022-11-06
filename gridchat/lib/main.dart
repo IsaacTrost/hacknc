@@ -7,6 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:sticky_headers/sticky_headers.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
@@ -26,11 +27,8 @@ class MyApp extends StatelessWidget {
           foregroundColor: Color.fromARGB(255, 151, 229, 201),
           toolbarHeight: 100,
           shape: Border(
-          bottom: BorderSide(
-            color: Color.fromARGB(255, 151, 229, 201),
-            width: 2
-          )
-        ),
+              bottom: BorderSide(
+                  color: Color.fromARGB(255, 151, 229, 201), width: 2)),
         ),
       ),
       home: Map(),
@@ -41,9 +39,8 @@ class MyApp extends StatelessWidget {
 
 class Message {
   String content;
-
-  Message(this.content);
-  Message.unnamed() : content = 'FUCK';
+  DateTime time;
+  Message(this.content, this.time);
 }
 
 class Cell {
@@ -66,19 +63,17 @@ class _MapState extends State<Map> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-
         title: Image.network(
           // <-- SEE HERE
           'https://iili.io/msFVKG.md.png', height: 50,
         ),
         actions: [
           Container(
-    margin: const EdgeInsets.only(right: 20.0),
-    child : IconButton(
-            onPressed: _pushBattery, icon: const Icon(Icons.battery_1_bar)),
+            margin: const EdgeInsets.only(right: 20.0),
+            child: IconButton(
+                onPressed: _pushBattery, icon: const Icon(Icons.battery_1_bar)),
           )
-          ],
-
+        ],
       ),
       body: GoogleMap(
         mapType: MapType.hybrid,
@@ -94,17 +89,17 @@ class _MapState extends State<Map> {
           });
         },
         myLocationEnabled: true,
-        
       ),
-            floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: _pushChat,
-        label: Text('Chat with your grid', style: TextStyle(fontWeight: FontWeight.bold),),
+        label: Text(
+          'Chat with your grid',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         icon: Icon(Icons.attach_email_outlined),
         backgroundColor: Color.fromARGB(255, 151, 229, 201),
         foregroundColor: Color.fromARGB(255, 43, 43, 43),
         extendedPadding: const EdgeInsets.all(75.0),
-      
-        
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       backgroundColor: Color.fromARGB(255, 43, 43, 43),
@@ -113,9 +108,11 @@ class _MapState extends State<Map> {
 
   void _pushBattery() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => Battery(), fullscreenDialog: false),
+      MaterialPageRoute(
+          builder: (context) => Battery(), fullscreenDialog: false),
     );
   }
+
   void initState() {
     super.initState();
     fetchLocation();
@@ -237,15 +234,16 @@ class Map extends StatefulWidget {
 }
 
 class _ChatState extends State<Chat> {
-  final List<String> _suggestions = <String>[
-    "Yo knkow, I really think I like cheese",
-    "But I dont"
+  final List<Message> _suggestions = <Message>[
+    Message("Yo knkow, I really think I like cheese", DateTime.now()),
+    Message("FUUUUUUUUUUUUUUUUUUUUCKKKKKKKKKKK", DateTime.now())
   ];
   final myController = TextEditingController();
   final _saved = <Text>{};
   final _biggerFont = const TextStyle(fontSize: 18);
   LocationData? _currentPosition;
   Location location = new Location();
+  final DateFormat formatter = DateFormat('h:mm  M/d ');
 
   // #enddocregion RWS-var
 
@@ -254,32 +252,37 @@ class _ChatState extends State<Chat> {
   Widget build(BuildContext context) {
     DateTime now = DateTime.now();
     return Scaffold(
-      
-        // NEW from here ...
-              floatingActionButton: FloatingActionButton(
-        // When the user presses the button, show an alert dialog containing
-        // the text that the user has entered into the text field.
-        onPressed: () {
-          _suggestions.length++;
-            _suggestions.add(myController.text);
-        },
-        child: const Icon(Icons.send),
-        backgroundColor: Color.fromARGB(255, 151, 229, 201),
-        foregroundColor: Color.fromARGB(255, 43, 43, 43),
-      ),
-      backgroundColor: Color.fromARGB(255, 43, 43, 43),
+        floatingActionButton: FloatingActionButton.extended(
+          // When the user presses the button, show an alert dialog containing
+          // the text that the user has entered into the text field.
+          onPressed: () {
+            if (Text(myController.text) != null) {
+              _suggestions.insert(
+                  0, Message(myController.text, DateTime.now()));
+              myController.text = "";
+              setState(() {
+                _suggestions;
+              });
+            }
+            ;
+          },
+          label: const Text('Send'),
+          icon: const Icon(Icons.send_rounded),
+          backgroundColor: Color.fromARGB(255, 151, 229, 201),
+          foregroundColor: Color.fromARGB(255, 43, 43, 43),
+        ),
+        backgroundColor: Color.fromARGB(255, 43, 43, 43),
         appBar: AppBar(
           automaticallyImplyLeading: false,
-                    leading:           Container(
-    margin: const EdgeInsets.only(left: 20.0),
-    child : IconButton(
-            onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
+          leading: Container(
+            margin: const EdgeInsets.only(left: 20.0),
+            child: IconButton(
+                onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
           ),
           title: Image.network(
             // <-- SEE HERE
             'https://iili.io/msFVKG.md.png', height: 50,
           ),
-
         ),
         // #docregion itemBuilder
         // body: ListView(
@@ -305,7 +308,6 @@ class _ChatState extends State<Chat> {
 
         body: CustomScrollView(
           reverse: true,
-          
           slivers: [
             SliverPadding(
                 padding: const EdgeInsets.all(20.0),
@@ -327,13 +329,18 @@ class _ChatState extends State<Chat> {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) {
-                      return Container(
-                        height: 30,
-              
-              child: Text(' ${now.hour.toString() + ":" + now.minute.toString() + ":" + now.second.toString() + "      " + _suggestions[index]}', style: TextStyle(color: Color.fromARGB(255, 151, 229, 201))),
-                      );
+                      if (index.isOdd) return const Divider();
+                      index = index ~/ 2;
+                      return ListTile(
+                          title: Text(' ${_suggestions[index].content}',
+                              style: TextStyle(
+                                  color: Color.fromARGB(255, 151, 229, 201))),
+                          trailing: Text(
+                              formatter.format(_suggestions[index].time),
+                              style: TextStyle(
+                                  color: Color.fromARGB(255, 151, 229, 201))));
                     },
-                    childCount: _suggestions.length,
+                    childCount: _suggestions.length * 2,
                   ),
                 )),
           ],
@@ -394,40 +401,31 @@ class Chat extends StatefulWidget {
   State<Chat> createState() => _ChatState();
 }
 
-
 class _BatteryState extends State<Battery> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
-       
         appBar: AppBar(
           automaticallyImplyLeading: false,
-
-          leading:           Container(
-    margin: const EdgeInsets.only(left: 20.0),
-    child : IconButton(
-            onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
+          leading: Container(
+            margin: const EdgeInsets.only(left: 20.0),
+            child: IconButton(
+                onPressed: _BackMap, icon: const Icon(Icons.map_rounded)),
           ),
           title: Text("Is my phone dead?"),
-
           actions: [
             Container(
-    margin: const EdgeInsets.only(right: 20.0),
-    child : IconButton(
-            onPressed: _pushClock, icon: const Icon(Icons.alarm)),
-          ),
+              margin: const EdgeInsets.only(right: 20.0),
+              child: IconButton(
+                  onPressed: _pushClock, icon: const Icon(Icons.alarm)),
+            ),
           ],
-
         ),
-
         body: Text("No. Your phone is not dead."));
     // #enddocregion itemBuilder
   }
 
-
-
-    void _BackMap() {
+  void _BackMap() {
     Navigator.pop(context);
   }
 
@@ -448,20 +446,16 @@ class Battery extends StatefulWidget {
   State<Battery> createState() => _BatteryState();
 }
 
-
 class _ClockState extends State<Clock> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
-       
         appBar: AppBar(
           automaticallyImplyLeading: false,
-
-          leading:           Container(
-    margin: const EdgeInsets.only(left: 20.0),
-    child : IconButton(
-            onPressed: _BackMap, icon: const Icon(Icons.battery_1_bar)),
+          leading: Container(
+            margin: const EdgeInsets.only(left: 20.0),
+            child: IconButton(
+                onPressed: _BackMap, icon: const Icon(Icons.battery_1_bar)),
           ),
           title: Text("What time is it?"),
           actions: [
@@ -473,17 +467,15 @@ class _ClockState extends State<Clock> {
           ],
 
         ),
-
         body: Image.network(
           // <-- SEE HERE
-          'https://media.giphy.com/avatars/Bojangles1977/mQphNcfEoEmA.gif', width: 10000,
+          'https://media.giphy.com/avatars/Bojangles1977/mQphNcfEoEmA.gif',
+          width: 10000,
         ));
     // #enddocregion itemBuilder
   }
 
-
-
-    void _BackMap() {
+  void _BackMap() {
     Navigator.pop(context);
   }
 
