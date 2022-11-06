@@ -71,6 +71,7 @@ Future<int> postHeartbeat(double latitude, double longitude, int userid) async {
     Uri.parse('https://gridchat.tech/heartbeat'),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
+      'Keep-Alive': "timeout=5, max=1000"
     },
     body: jsonEncode(<String, String>{
       'user_id': userid.toString(),
@@ -81,7 +82,9 @@ Future<int> postHeartbeat(double latitude, double longitude, int userid) async {
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response,
     // then parse the JSON.
-    return jsonDecode(response.body)['grid_id'];
+    Map<String, dynamic> grideo = jsonDecode(response.body);
+
+    return grideo["grid_id"];
   } else {
     // If the server did not return a 200 OK response,
     // then throw an exception.
@@ -114,7 +117,13 @@ Future<List<Message>> fetchMessages(int currentGridId) async {
     // If the server did return a 200 OK response,
     // then parse the JSON.
     List<Message> returny = [];
-    for (var x in jsonDecode(response.body)) returny.add(Message.fromJson(x));
+    for (var i = 0; i < 100; i++) {
+      print(jsonDecode(response.body));
+    }
+    var jsony = jsonDecode(response.body);
+    for (var asdf in jsony) {
+      returny.add(Message.fromJson(asdf));
+    }
     return returny;
   } else {
     // If the server did not return a 200 OK response,
@@ -272,16 +281,13 @@ class _MapyState extends State<Mapy> {
       locGridLines.add(Polygon(
         polygonId: PolygonId((counter).toString()),
         visible: true,
-        fillColor: Color.fromARGB(90, 40, 151, (255 ~/ 100) * counter),
+        fillColor: Color.fromARGB(8 * x.activity, 40, 151, 201),
         points: latlng,
         strokeWidth: 1,
-        strokeColor: Color.fromARGB(255, 151, x.activity * 8, 201),
+        strokeColor: Color.fromARGB(255, 151, 229, 201),
       ));
 
       counter++;
-    }
-    for (var x in locGridLines) {
-      print(x.points);
     }
 
     setState(() {
@@ -331,8 +337,8 @@ class _MapyState extends State<Mapy> {
     }
     location.onLocationChanged.listen((LocationData currentLocation) async {
       if (_currentPosition != null) {
-        currentGridId = await postHeartbeat(currentLocation.latitude ?? 30.0,
-            currentLocation.longitude ?? 30.0, userid);
+        //currentGridId = await postHeartbeat(currentLocation.latitude ?? 30.0,
+        //    currentLocation.longitude ?? 30.0, userid);
         setState(() {
           _currentPosition;
         });
@@ -358,7 +364,38 @@ class Mapy extends StatefulWidget {
 class _ChatState extends State<Chat> {
   var userid = 1;
   var currentGridId = 0;
-  List<Message> _suggestions = [];
+  List<Message> _suggestions = [
+    Message(
+        content:
+            "I really feel like this building could use less lead in its water",
+        time: DateTime.now().subtract(new Duration(days: 1))),
+    Message(
+        content:
+            "I agree, there is only so much  lead a student should be reasonably expected to consume.",
+        time: DateTime.now().subtract(new Duration(hours: 18))),
+    Message(
+        content:
+            "I actually really enjoy the taste of lead, so I dont get what the fuss is about.",
+        time: DateTime.now().subtract(new Duration(hours: 15))),
+    Message(
+        content: "Not to get off topic, but I really like pizza",
+        time: DateTime.now().subtract(new Duration(hours: 10))),
+    Message(
+        content: "I agree about the pizza",
+        time: DateTime.now().subtract(new Duration(hours: 5))),
+    Message(
+        content: "Lead on pizza is really the moves",
+        time: DateTime.now().subtract(new Duration(days: 5))),
+    Message(
+        content: "That has to be even worse then the pineapple craze",
+        time: DateTime.now().subtract(new Duration(minutes: 45))),
+    Message(
+        content: "How about that math test, that was brutal",
+        time: DateTime.now().subtract(new Duration(minutes: 12))),
+    Message(
+        content: "Nobody comes on here to talk about school, man",
+        time: DateTime.now().subtract(new Duration(minutes: 11))),
+  ];
   final myController = TextEditingController();
   final _saved = <Text>{};
   final _biggerFont = const TextStyle(fontSize: 18);
@@ -493,7 +530,6 @@ class _ChatState extends State<Chat> {
   void initState() {
     super.initState();
     fetchLocation();
-    loadMessages();
   }
 
   loadMessages() async {
@@ -523,8 +559,8 @@ class _ChatState extends State<Chat> {
     _currentPosition = await location.getLocation();
     location.onLocationChanged.listen((LocationData currentLocation) async {
       if (_currentPosition != null) {
-        currentGridId = await postHeartbeat(currentLocation.latitude ?? 30.0,
-            currentLocation.longitude ?? 30.0, userid);
+        //currentGridId = await postHeartbeat(currentLocation.latitude ?? 30.0,
+        //    currentLocation.longitude ?? 30.0, userid);
         setState(() {
           _currentPosition;
         });
