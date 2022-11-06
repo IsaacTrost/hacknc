@@ -321,6 +321,10 @@ class _ChatState extends State<Chat> {
                     <Widget>[
                       TextField(
                         controller: myController,
+                        decoration: InputDecoration(
+    filled: true, //<-- SEE HERE
+    fillColor: Colors.white, //<-- SEE HERE
+  ),
                       ),
                     ],
                   ),
@@ -459,6 +463,14 @@ class _ClockState extends State<Clock> {
                 onPressed: _BackMap, icon: const Icon(Icons.battery_1_bar)),
           ),
           title: Text("What time is it?"),
+          actions: [
+            Container(
+    margin: const EdgeInsets.only(right: 20.0),
+    child : IconButton(
+            onPressed: _popClock, icon: const Icon(Icons.map_rounded)),
+          ),
+          ],
+
         ),
         body: Image.network(
           // <-- SEE HERE
@@ -476,6 +488,11 @@ class _ClockState extends State<Clock> {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => Clock(), fullscreenDialog: false),
     );
+  }
+
+  void _popClock() {
+    Navigator.pop(context);
+    Navigator.pop(context);
   }
   // #enddocregion RWS-build
   // #docregion RWS-var
